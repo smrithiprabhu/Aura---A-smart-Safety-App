@@ -83,7 +83,7 @@ const AuraApp = () => {
           <h3 className="text-white font-semibold mb-1">Audio Shield</h3>
           <p className="text-red-300/70 text-xs">Discreet recording</p>
         </button>
-        
+
         <button
           onClick={() => setActiveTab('fake')}
           className="bg-gradient-to-br from-blue-950/40 to-indigo-950/40 border border-blue-900/30 rounded-2xl p-6 text-left hover:from-blue-950/60 hover:to-indigo-950/60 hover:border-blue-800/40 transition-all group"
@@ -97,7 +97,7 @@ const AuraApp = () => {
       </div>
 
       {/* Environmental Scanner Preview */}
-      <div 
+      <div
         onClick={() => setActiveTab('scanner')}
         className="bg-gray-950/60 border border-gray-900/40 rounded-2xl p-5 cursor-pointer hover:bg-gray-900/70 hover:border-gray-800/50 transition-all"
       >
@@ -142,7 +142,7 @@ const AuraApp = () => {
     const generateMockTranscript = (avgVolume) => {
       const volumeThreshold = 0.05;
       const isRaisedVoice = avgVolume > volumeThreshold;
-      
+
       // Randomly generate different transcript scenarios for demo
       const transcripts = [
         isRaisedVoice ? "You better watch out! I'm angry!" : "Hello, how are you today?",
@@ -150,14 +150,14 @@ const AuraApp = () => {
         isRaisedVoice ? "Stop! Get away from me!" : "Let's talk about this calmly.",
         isRaisedVoice ? "You hurt me again! I hate this!" : "I'm just checking in with you.",
       ];
-      
+
       return transcripts[Math.floor(Math.random() * transcripts.length)];
     };
 
     // Detect threat keywords in transcript
     const detectThreats = (transcript) => {
       const lowerTranscript = transcript.toLowerCase();
-      const detectedThreats = threatKeywords.filter(keyword => 
+      const detectedThreats = threatKeywords.filter(keyword =>
         lowerTranscript.includes(keyword)
       );
       return detectedThreats.length > 0;
@@ -167,7 +167,7 @@ const AuraApp = () => {
       try {
         setAnalysisResult(null);
         setRecordingTime(0);
-        
+
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const recorder = new MediaRecorder(stream);
         const chunks = [];
@@ -179,9 +179,9 @@ const AuraApp = () => {
         recorder.onstop = async () => {
           const blob = new Blob(chunks, { type: 'audio/webm' });
           setRecordingBlob(blob);
-          
+
           stream.getTracks().forEach(track => track.stop());
-          
+
           setTimeout(async () => {
             await performThreatAnalysis(blob);
           }, 200);
@@ -216,7 +216,7 @@ const AuraApp = () => {
         const arrayBuffer = await blob.arrayBuffer();
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        
+
         // Sound analysis: compute average volume
         const channelData = audioBuffer.getChannelData(0);
         let sum = 0;
@@ -224,15 +224,15 @@ const AuraApp = () => {
           sum += Math.abs(channelData[i]);
         }
         const avgVolume = sum / channelData.length;
-        
+
         // Sound check: determine if raised voice
         const volumeThreshold = 0.05;
         const hasRaisedVoice = avgVolume > volumeThreshold;
-        
+
         // Speech check: generate mock transcript and scan for threat keywords
         const generatedTranscript = generateMockTranscript(avgVolume);
         const hasThreateningWords = detectThreats(generatedTranscript);
-        
+
         // Determine transcript label based on analysis
         let transcriptLabel = "Normal speech";
         if (hasRaisedVoice && hasThreateningWords) {
@@ -242,15 +242,15 @@ const AuraApp = () => {
         } else if (hasThreateningWords) {
           transcriptLabel = "Threatening words";
         }
-        
+
         // Final threat determination: aggression if either raised voice OR threatening words
         const isThreat = hasRaisedVoice || hasThreateningWords;
         const confidence = parseFloat((0.70 + Math.random() * 0.25).toFixed(2));
-        
-        const threatLabel = isThreat 
-          ? "Aggression Detected" 
+
+        const threatLabel = isThreat
+          ? "Aggression Detected"
           : "No Threat";
-        
+
         setAnalysisResult({
           threat: isThreat,
           label: threatLabel,
@@ -261,7 +261,7 @@ const AuraApp = () => {
           hasRaisedVoice: hasRaisedVoice,
           hasThreateningWords: hasThreateningWords
         });
-        
+
         audioContext.close();
       } catch (error) {
         console.error('Error analyzing audio:', error);
@@ -287,17 +287,16 @@ const AuraApp = () => {
         <div className="flex flex-col items-center justify-center py-12">
           <button
             onClick={handleRecordingToggle}
-            className={`w-48 h-48 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl ${
-              audioShieldActive 
-                ? 'bg-gradient-to-br from-red-600 to-red-800 shadow-red-500/60 scale-105' 
+            className={`w-48 h-48 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl ${audioShieldActive
+                ? 'bg-gradient-to-br from-red-600 to-red-800 shadow-red-500/60 scale-105'
                 : 'bg-gradient-to-br from-gray-900 to-black hover:from-gray-800 hover:to-gray-900 border border-gray-800'
-            }`}
+              }`}
           >
             <div className={`${audioShieldActive ? 'animate-pulse' : ''}`}>
               <Mic className={`w-20 h-20 ${audioShieldActive ? 'text-white' : 'text-gray-400'}`} />
             </div>
           </button>
-          
+
           {audioShieldActive && (
             <div className="mt-8 text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
@@ -311,7 +310,7 @@ const AuraApp = () => {
               </div>
             </div>
           )}
-          
+
           {!audioShieldActive && !analysisResult && (
             <div className="mt-8 text-center text-gray-400 text-sm flex flex-col items-center gap-2">
               <FileAudio className="w-5 h-5 text-gray-500" />
@@ -323,18 +322,16 @@ const AuraApp = () => {
         {/* Analysis Results */}
         {analysisResult && (
           <div className="fade-in-result animate-fade-in">
-            <div className={`bg-gradient-to-br rounded-2xl p-6 border ${
-              analysisResult.threat 
-                ? 'from-red-950/60 to-orange-950/60 border-red-800/40' 
+            <div className={`bg-gradient-to-br rounded-2xl p-6 border ${analysisResult.threat
+                ? 'from-red-950/60 to-orange-950/60 border-red-800/40'
                 : 'from-emerald-950/60 to-teal-950/60 border-emerald-800/40'
-            }`}>
+              }`}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-white font-bold text-xl">Analysis Results</h3>
-                <div className={`px-4 py-2 rounded-full font-semibold text-sm ${
-                  analysisResult.threat 
-                    ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                <div className={`px-4 py-2 rounded-full font-semibold text-sm ${analysisResult.threat
+                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                     : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                }`}>
+                  }`}>
                   {analysisResult.label}
                 </div>
               </div>
@@ -349,12 +346,11 @@ const AuraApp = () => {
                     <span className="text-white font-bold text-lg">{(analysisResult.confidence * 100).toFixed(0)}%</span>
                   </div>
                   <div className="w-full bg-gray-900 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full transition-all duration-500 ${
-                        analysisResult.threat 
-                          ? 'bg-gradient-to-r from-red-500 to-orange-500' 
+                    <div
+                      className={`h-2 rounded-full transition-all duration-500 ${analysisResult.threat
+                          ? 'bg-gradient-to-r from-red-500 to-orange-500'
                           : 'bg-gradient-to-r from-emerald-500 to-teal-500'
-                      }`}
+                        }`}
                       style={{ width: `${analysisResult.confidence * 100}%` }}
                     ></div>
                   </div>
@@ -365,12 +361,11 @@ const AuraApp = () => {
                     <FileAudio className="w-4 h-4" />
                     <span>Threat Analysis Summary</span>
                   </div>
-                  <div className={`font-medium text-sm mb-3 px-3 py-2 rounded-lg ${
-                    analysisResult.threat ? 'bg-red-900/30 text-red-300' : 'bg-emerald-900/30 text-emerald-300'
-                  }`}>
+                  <div className={`font-medium text-sm mb-3 px-3 py-2 rounded-lg ${analysisResult.threat ? 'bg-red-900/30 text-red-300' : 'bg-emerald-900/30 text-emerald-300'
+                    }`}>
                     "{analysisResult.transcript}"
                   </div>
-                  
+
                   {/* Detection indicators */}
                   <div className="space-y-2 text-xs">
                     <div className="flex items-center gap-2">
@@ -449,6 +444,20 @@ const AuraApp = () => {
 
   const FakeEngagementPage = () => {
     const [selectedScenario, setSelectedScenario] = useState(null);
+    const [callAccepted, setCallAccepted] = useState(false);
+    const [callEndTime, setCallEndTime] = useState(null);
+    const [incomingCallTimeout, setIncomingCallTimeout] = useState(null);
+    const incomingCallTimeoutRef = React.useRef(null);
+    const [now, setNow] = useState(Date.now());
+    const [fakeTranscript, setFakeTranscript] = useState('');
+    const audioContextRef = React.useRef(null);
+    const ringtoneIntervalRef = React.useRef(null);
+    const transcriptIntervalRef = React.useRef(null);
+
+    const callerInfo = {
+      video: { name: 'Mom Calling…', emoji: '👩' },
+      urgent: { name: 'Boss Calling…', emoji: '💼' }
+    };
 
     const scenarios = [
       {
@@ -495,6 +504,234 @@ const AuraApp = () => {
       red: 'text-red-400'
     };
 
+    // Play EXTREME scary alarm ringtone to deter threats
+    const playRingtone = React.useCallback(() => {
+      try {
+        if (!audioContextRef.current) {
+          audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        const audioContext = audioContextRef.current;
+
+        // Try to resume context (may require user gesture in some browsers)
+        audioContext.resume && audioContext.resume().catch(() => {});
+
+        // Create gain node for volume control (MAXIMUM LOUDNESS)
+        const gainNode = audioContext.createGain();
+        gainNode.connect(audioContext.destination);
+        gainNode.gain.setValueAtTime(1.2, audioContext.currentTime);
+
+        // Create secondary gain for extra intensity
+        const intensifyGain = audioContext.createGain();
+        intensifyGain.connect(gainNode);
+        intensifyGain.gain.setValueAtTime(1.5, audioContext.currentTime);
+
+        // Function to play EXTREME threatening alarm
+        const playThreatAlarm = () => {
+          const t0 = audioContext.currentTime;
+
+          // ULTRA HIGH frequency shriek (threatening)
+          for (let i = 0; i < 5; i++) {
+            const shriek = audioContext.createOscillator();
+            shriek.type = 'sawtooth';
+            shriek.frequency.value = 2000 + (i * 500); // 2000, 2500, 3000, 3500, 4000 Hz
+            shriek.connect(intensifyGain);
+            shriek.start(t0 + (i * 0.06));
+            shriek.stop(t0 + (i * 0.06) + 0.08);
+          }
+
+          // BASS THREAT - Deep rumble for psychological impact
+          const deepBass = audioContext.createOscillator();
+          deepBass.type = 'sine';
+          deepBass.frequency.value = 80; // Ultra low frequency
+          deepBass.connect(intensifyGain);
+          deepBass.start(t0 + 0.4);
+          deepBass.stop(t0 + 1.2);
+
+          // RAPID FIRE high-frequency pulses (alarm effect)
+          for (let i = 0; i < 4; i++) {
+            const pulse = audioContext.createOscillator();
+            pulse.type = 'triangle';
+            pulse.frequency.value = 1600 + (Math.random() * 800); // Random high freq
+            pulse.connect(intensifyGain);
+            pulse.start(t0 + 1.15 + (i * 0.08));
+            pulse.stop(t0 + 1.15 + (i * 0.08) + 0.09);
+          }
+
+          // EXTREME contrast - Jump to very high
+          const extreme = audioContext.createOscillator();
+          extreme.type = 'square';
+          extreme.frequency.value = 3500;
+          extreme.connect(intensifyGain);
+          extreme.start(t0 + 1.6);
+          extreme.stop(t0 + 2.2);
+        };
+
+        // Attempt to play after resuming context (some browsers require gesture)
+        const tryPlay = () => {
+          try {
+            playThreatAlarm();
+            if (ringtoneIntervalRef.current) clearInterval(ringtoneIntervalRef.current);
+            ringtoneIntervalRef.current = setInterval(playThreatAlarm, 2800);
+          } catch (err) {
+            console.error('Failed to start alarm immediately:', err);
+          }
+        };
+
+        // If the context is suspended, resume first then play
+        if (audioContext.state === 'suspended' && audioContext.resume) {
+          audioContext.resume().then(tryPlay).catch(tryPlay);
+        } else {
+          tryPlay();
+        }
+      } catch (error) {
+        console.error('Error playing ringtone:', error);
+      }
+    }, []);
+
+    // Stop ringtone
+    const stopRingtone = React.useCallback(() => {
+      try {
+        if (ringtoneIntervalRef.current) {
+          clearInterval(ringtoneIntervalRef.current);
+          ringtoneIntervalRef.current = null;
+        }
+        if (audioContextRef.current) {
+          audioContextRef.current.close();
+          audioContextRef.current = null;
+        }
+      } catch (error) {
+        console.error('Error stopping ringtone:', error);
+      }
+    }, []);
+
+    // Handle call acceptance
+    const handleAcceptCall = () => {
+      stopRingtone();
+      setCallAccepted(true);
+      const endTime = Date.now() + 60000; // 60 seconds
+      setCallEndTime(endTime);
+    };
+
+    // Handle call decline
+    const handleDeclineCall = () => {
+      stopRingtone();
+      setSelectedScenario(null);
+      setCallAccepted(false);
+      setCallEndTime(null);
+    };
+
+    // Auto-end call after 60 seconds
+    useEffect(() => {
+      if (callAccepted && callEndTime) {
+        const msLeft = Math.max(0, callEndTime - Date.now());
+        const timer = setTimeout(() => {
+          stopRingtone();
+          setCallAccepted(false);
+          setCallEndTime(null);
+        }, msLeft);
+        return () => clearTimeout(timer);
+      }
+    }, [callAccepted, callEndTime, stopRingtone]);
+
+    // Live countdown tick while call is active
+    useEffect(() => {
+      let tick;
+      if (callAccepted && callEndTime) {
+        tick = setInterval(() => setNow(Date.now()), 1000);
+      }
+      return () => clearInterval(tick);
+    }, [callAccepted, callEndTime]);
+
+    // Play ringtone when incoming call popup appears
+    useEffect(() => {
+      const showIncomingCall = selectedScenario && (selectedScenario === 'video' || selectedScenario === 'urgent') && !callAccepted;
+      
+      if (showIncomingCall) {
+        playRingtone();
+        // Keep incoming call visible for 30 seconds (configurable)
+        const timeout = setTimeout(() => {
+          stopRingtone();
+          setSelectedScenario(null);
+        }, 30000);
+        setIncomingCallTimeout(timeout);
+        incomingCallTimeoutRef.current = timeout;
+      } else {
+        stopRingtone();
+        if (incomingCallTimeoutRef.current) {
+          clearTimeout(incomingCallTimeoutRef.current);
+          incomingCallTimeoutRef.current = null;
+        }
+        if (incomingCallTimeout) {
+          clearTimeout(incomingCallTimeout);
+          setIncomingCallTimeout(null);
+        }
+      }
+
+      return () => {
+        if (incomingCallTimeoutRef.current) {
+          clearTimeout(incomingCallTimeoutRef.current);
+          incomingCallTimeoutRef.current = null;
+        }
+        if (incomingCallTimeout) {
+          clearTimeout(incomingCallTimeout);
+        }
+        stopRingtone();
+      };
+    }, [selectedScenario, callAccepted]);
+
+    // Show incoming call popup for video and urgent scenarios (stays visible until accepted or 25 seconds pass)
+    const showIncomingCall = selectedScenario && (selectedScenario === 'video' || selectedScenario === 'urgent') && !callAccepted;
+
+    // Fake transcript cycling while in call to simulate live conversation
+    useEffect(() => {
+      if (callAccepted) {
+        const lines = [
+          "Hey, are you okay?",
+          "I'm calling for help.",
+          "Stay on the line, don't move.",
+          "I can see you, stay visible.",
+          "Help is on the way, stay calm."
+        ];
+        let idx = 0;
+        setFakeTranscript(lines[idx]);
+        transcriptIntervalRef.current = setInterval(() => {
+          idx = (idx + 1) % lines.length;
+          setFakeTranscript(lines[idx]);
+        }, 3000);
+      } else {
+        setFakeTranscript('');
+        if (transcriptIntervalRef.current) {
+          clearInterval(transcriptIntervalRef.current);
+          transcriptIntervalRef.current = null;
+        }
+      }
+
+      return () => {
+        if (transcriptIntervalRef.current) {
+          clearInterval(transcriptIntervalRef.current);
+          transcriptIntervalRef.current = null;
+        }
+      };
+    }, [callAccepted]);
+
+    // Cleanup on unmount: stop ringtone and clear intervals/timeouts
+    useEffect(() => {
+      return () => {
+        try {
+          stopRingtone();
+        } catch (e) {}
+        if (transcriptIntervalRef.current) {
+          clearInterval(transcriptIntervalRef.current);
+          transcriptIntervalRef.current = null;
+        }
+        if (incomingCallTimeoutRef.current) {
+          clearTimeout(incomingCallTimeoutRef.current);
+          incomingCallTimeoutRef.current = null;
+        }
+      };
+    }, []);
+
     return (
       <div className="space-y-6">
         <div className="text-center mb-8">
@@ -537,16 +774,168 @@ const AuraApp = () => {
           })}
         </div>
 
-        {selectedScenario && (
+        {/* Incoming Call Popup */}
+        {showIncomingCall && !callAccepted && (
+          <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
+            <div className="bg-gradient-to-b from-gray-900 to-black rounded-3xl p-8 max-w-sm w-full border border-gray-800 shadow-2xl">
+              <div className="text-center">
+                {/* Caller Avatar */}
+                <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-purple-500/40 animate-pulse">
+                  <span className="text-5xl">{callerInfo[selectedScenario]?.emoji}</span>
+                </div>
+
+                {/* Caller Name */}
+                <h2 className="text-3xl font-bold text-white mb-2">{callerInfo[selectedScenario]?.name}</h2>
+
+                {/* Incoming Call Label */}
+                <div className="flex items-center justify-center gap-2 mb-8">
+                  <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+                  <p className="text-red-300 text-sm font-semibold">Incoming call</p>
+                </div>
+
+                {/* Accept / Decline Buttons */}
+                <div className="flex gap-4">
+                  <button
+                    onClick={handleDeclineCall}
+                    className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-4 rounded-full font-semibold transition-all flex items-center justify-center gap-2"
+                  >
+                    <Phone className="w-5 h-5 rotate-180" />
+                    Decline
+                  </button>
+                  <button
+                    onClick={handleAcceptCall}
+                    className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-full font-semibold transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/40"
+                  >
+                    <Phone className="w-5 h-5" />
+                    Accept
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Full-Screen Video Call */}
+        {callAccepted && (
+          <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+            <div className="w-full h-full flex flex-col relative overflow-hidden">
+              {/* Main Video Background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-950">
+                {/* Animated grid background */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute inset-0" style={{
+                    backgroundImage: 'linear-gradient(0deg, transparent 24%, rgba(100, 200, 255, 0.05) 25%, rgba(100, 200, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(100, 200, 255, 0.05) 75%, rgba(100, 200, 255, 0.05) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(100, 200, 255, 0.05) 25%, rgba(100, 200, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(100, 200, 255, 0.05) 75%, rgba(100, 200, 255, 0.05) 76%, transparent 77%, transparent)',
+                    backgroundSize: '50px 50px'
+                  }}></div>
+                </div>
+              </div>
+
+              {/* Caller Video Frame (Center) */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative w-full h-full flex items-center justify-center">
+                  {/* Caller Avatar Large */}
+                  <div className="relative">
+                    <div className="w-48 h-48 bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-purple-500/50 animate-pulse">
+                      <span className="text-8xl">{callerInfo[selectedScenario]?.emoji}</span>
+                    </div>
+                    {/* Animated pulse ring */}
+                    <div className="absolute inset-0 rounded-3xl border-2 border-emerald-400 animate-ping opacity-50"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Top Bar - Status Info */}
+              <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent p-6 z-20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                    <span className="text-white font-semibold text-lg">Video Call</span>
+                  </div>
+                  <div className="text-white text-xl font-mono font-bold">
+                    {callEndTime && (() => {
+                      const remaining = Math.max(0, Math.ceil((callEndTime - now) / 1000));
+                      const mins = Math.floor(remaining / 60);
+                      const secs = remaining % 60;
+                      return `${mins}:${secs.toString().padStart(2, '0')}`;
+                    })()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Caller Info - Top Center */}
+              <div className="absolute top-24 left-1/2 transform -translate-x-1/2 z-20 text-center">
+                <h2 className="text-3xl font-bold text-white mb-2">{callerInfo[selectedScenario]?.name}</h2>
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                  <span className="text-emerald-400 font-semibold text-sm">LIVE</span>
+                </div>
+              </div>
+
+              {/* Self Video (Mini) - Top Right */}
+              <div className="absolute top-6 right-6 z-20">
+                <div className="w-24 h-32 bg-gradient-to-br from-cyan-900 to-blue-900 rounded-xl border-2 border-cyan-400 flex items-center justify-center shadow-lg">
+                  <div className="text-center">
+                    <span className="text-4xl">👤</span>
+                    <p className="text-xs text-cyan-300 mt-1">You</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Control Bar - Bottom */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8 z-20">
+                <div className="flex items-center justify-center gap-6">
+                  {/* Mute Microphone Button */}
+                  <button className="w-14 h-14 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-all shadow-lg">
+                    <Mic className="w-6 h-6 text-white" />
+                  </button>
+
+                  {/* Camera Toggle Button */}
+                  <button className="w-14 h-14 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-all shadow-lg">
+                    <Video className="w-6 h-6 text-white" />
+                  </button>
+
+                  {/* End Call Button */}
+                  <button
+                    onClick={handleDeclineCall}
+                    className="w-16 h-16 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition-all shadow-lg shadow-red-500/40 transform hover:scale-110"
+                  >
+                    <Phone className="w-8 h-8 text-white rotate-180" />
+                  </button>
+
+                  {/* Speaker Button */}
+                  <button className="w-14 h-14 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-all shadow-lg">
+                    <Volume2 className="w-6 h-6 text-white" />
+                  </button>
+
+                  {/* Settings Button */}
+                  <button className="w-14 h-14 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-all shadow-lg">
+                    <Settings className="w-6 h-6 text-white" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Connection Quality Indicator - Bottom Left */}
+              <div className="absolute bottom-8 left-8 bg-black/60 rounded-lg p-3 z-20">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-emerald-400" />
+                  <span className="text-emerald-400 text-xs font-semibold">HD Connection</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Friend Nearby Modal (existing behavior) */}
+        {selectedScenario === 'friend' && (
           <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
             <div className="bg-gray-900 rounded-3xl p-8 max-w-sm w-full border border-gray-800">
               <div className="text-center">
                 <div className="w-20 h-20 bg-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Phone className="w-10 h-10 text-emerald-400 animate-pulse" />
+                  <MessageSquare className="w-10 h-10 text-emerald-400 animate-pulse" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3">Scenario Activated</h3>
+                <h3 className="text-2xl font-bold text-white mb-3">Friend Message</h3>
                 <p className="text-gray-400 text-sm mb-8 leading-relaxed">
-                  Your fake {scenarios.find(s => s.id === selectedScenario)?.title.toLowerCase()} is now active
+                  Your friend says they can see you nearby and is coming to pick you up
                 </p>
                 <button
                   onClick={() => setSelectedScenario(null)}
@@ -581,13 +970,11 @@ const AuraApp = () => {
           </div>
           <button
             onClick={() => setEnvironmentalScanActive(!environmentalScanActive)}
-            className={`w-16 h-9 rounded-full transition-all relative ${
-              environmentalScanActive ? 'bg-emerald-500 shadow-lg shadow-emerald-500/40' : 'bg-gray-700'
-            }`}
+            className={`w-16 h-9 rounded-full transition-all relative ${environmentalScanActive ? 'bg-emerald-500 shadow-lg shadow-emerald-500/40' : 'bg-gray-700'
+              }`}
           >
-            <div className={`w-7 h-7 bg-white rounded-full transition-transform absolute top-1 ${
-              environmentalScanActive ? 'translate-x-8' : 'translate-x-1'
-            }`}></div>
+            <div className={`w-7 h-7 bg-white rounded-full transition-transform absolute top-1 ${environmentalScanActive ? 'translate-x-8' : 'translate-x-1'
+              }`}></div>
           </button>
         </div>
       </div>
@@ -597,9 +984,8 @@ const AuraApp = () => {
         <div className="bg-gray-950/70 border border-gray-900/40 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                lightLevel < 40 ? 'bg-amber-500/20' : 'bg-gray-700/50'
-              }`}>
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${lightLevel < 40 ? 'bg-amber-500/20' : 'bg-gray-700/50'
+                }`}>
                 <Sun className={`w-6 h-6 ${lightLevel < 40 ? 'text-amber-400' : 'text-gray-400'}`} />
               </div>
               <span className="text-white font-semibold text-lg">Light Level</span>
@@ -607,10 +993,9 @@ const AuraApp = () => {
             <span className="text-3xl font-bold text-white">{Math.round(lightLevel)}%</span>
           </div>
           <div className="w-full bg-gray-800 rounded-full h-3">
-            <div 
-              className={`h-3 rounded-full transition-all shadow-lg ${
-                lightLevel < 40 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 shadow-amber-500/50' : 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-emerald-500/50'
-              }`}
+            <div
+              className={`h-3 rounded-full transition-all shadow-lg ${lightLevel < 40 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 shadow-amber-500/50' : 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-emerald-500/50'
+                }`}
               style={{ width: `${lightLevel}%` }}
             ></div>
           </div>
@@ -625,9 +1010,8 @@ const AuraApp = () => {
         <div className="bg-gray-950/70 border border-gray-900/40 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                soundLevel > 70 ? 'bg-red-500/20' : 'bg-gray-700/50'
-              }`}>
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${soundLevel > 70 ? 'bg-red-500/20' : 'bg-gray-700/50'
+                }`}>
                 <Activity className={`w-6 h-6 ${soundLevel > 70 ? 'text-red-400' : 'text-gray-400'}`} />
               </div>
               <span className="text-white font-semibold text-lg">Sound Level</span>
@@ -635,10 +1019,9 @@ const AuraApp = () => {
             <span className="text-3xl font-bold text-white">{Math.round(soundLevel)}dB</span>
           </div>
           <div className="w-full bg-gray-800 rounded-full h-3">
-            <div 
-              className={`h-3 rounded-full transition-all shadow-lg ${
-                soundLevel > 70 ? 'bg-gradient-to-r from-red-500 to-orange-500 shadow-red-500/50' : 'bg-gradient-to-r from-cyan-500 to-blue-500 shadow-cyan-500/50'
-              }`}
+            <div
+              className={`h-3 rounded-full transition-all shadow-lg ${soundLevel > 70 ? 'bg-gradient-to-r from-red-500 to-orange-500 shadow-red-500/50' : 'bg-gradient-to-r from-cyan-500 to-blue-500 shadow-cyan-500/50'
+                }`}
               style={{ width: `${Math.min(100, soundLevel)}%` }}
             ></div>
           </div>
@@ -724,36 +1107,32 @@ const AuraApp = () => {
           <div className="grid grid-cols-4 gap-2 py-3">
             <button
               onClick={() => setActiveTab('home')}
-              className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${
-                activeTab === 'home' ? 'text-cyan-400 bg-cyan-950/30' : 'text-gray-600 hover:text-gray-400'
-              }`}
+              className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${activeTab === 'home' ? 'text-cyan-400 bg-cyan-950/30' : 'text-gray-600 hover:text-gray-400'
+                }`}
             >
               <Home className="w-6 h-6" />
               <span className="text-xs font-medium">Home</span>
             </button>
             <button
               onClick={() => setActiveTab('audio')}
-              className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${
-                activeTab === 'audio' ? 'text-cyan-400 bg-cyan-950/30' : 'text-gray-600 hover:text-gray-400'
-              }`}
+              className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${activeTab === 'audio' ? 'text-cyan-400 bg-cyan-950/30' : 'text-gray-600 hover:text-gray-400'
+                }`}
             >
               <Mic className="w-6 h-6" />
               <span className="text-xs font-medium">Audio</span>
             </button>
             <button
               onClick={() => setActiveTab('fake')}
-              className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${
-                activeTab === 'fake' ? 'text-cyan-400 bg-cyan-950/30' : 'text-gray-600 hover:text-gray-400'
-              }`}
+              className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${activeTab === 'fake' ? 'text-cyan-400 bg-cyan-950/30' : 'text-gray-600 hover:text-gray-400'
+                }`}
             >
               <Phone className="w-6 h-6" />
               <span className="text-xs font-medium">Fake Call</span>
             </button>
             <button
               onClick={() => setActiveTab('scanner')}
-              className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${
-                activeTab === 'scanner' ? 'text-cyan-400 bg-cyan-950/30' : 'text-gray-600 hover:text-gray-400'
-              }`}
+              className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${activeTab === 'scanner' ? 'text-cyan-400 bg-cyan-950/30' : 'text-gray-600 hover:text-gray-400'
+                }`}
             >
               <Activity className="w-6 h-6" />
               <span className="text-xs font-medium">Scanner</span>
