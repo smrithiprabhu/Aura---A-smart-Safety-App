@@ -7,6 +7,7 @@ import callerProfileService from '../services/callerProfileService';
 import emergencyService from '../services/emergencyService';
 import videoLibraryService from '../services/videoLibraryService';
 import ringtoneService from '../services/ringtoneService';
+import voiceCallAudioService from '../services/voiceCallAudioService';
 import { getDeviceStatus, formatCallDuration } from '../utils/deviceStatus';
 
 export const EnhancedFakeCall = ({ onClose }) => {
@@ -80,12 +81,12 @@ export const EnhancedFakeCall = ({ onClose }) => {
         setCallState('incoming');
         playRingtone();
 
-        // Auto-dismiss after 30 seconds
+        // Auto-dismiss after 60 seconds (extended ringtone duration)
         setTimeout(() => {
             if (callState === 'incoming') {
                 handleDecline();
             }
-        }, 30000);
+        }, 60000);
     };
 
     const handleAccept = () => {
@@ -106,6 +107,9 @@ export const EnhancedFakeCall = ({ onClose }) => {
         // Start camera for self-view
         startCamera();
 
+        // Start realistic voice call audio with ambient background
+        voiceCallAudioService.playVoiceCall();
+
         // Start voice responses for realistic conversation
         startVoiceResponses();
 
@@ -121,6 +125,7 @@ export const EnhancedFakeCall = ({ onClose }) => {
 
     const handleDecline = () => {
         stopRingtone();
+        voiceCallAudioService.stop(); // Stop voice call audio
         setCallState('idle');
         setCallDuration(0);
         setVideoSequence([]);
@@ -363,6 +368,7 @@ export const EnhancedFakeCall = ({ onClose }) => {
     useEffect(() => {
         return () => {
             stopRingtone();
+            voiceCallAudioService.stop(); // Stop voice audio on unmount
             stopCamera();
             stopVoiceResponses();
             emergencyService.stopLocationTracking();

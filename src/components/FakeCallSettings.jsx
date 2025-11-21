@@ -1,3 +1,4 @@
+
 /**
  * Fake Call Settings Page
  * Manage profiles, scheduled calls, and activation triggers
@@ -72,8 +73,8 @@ export const FakeCallSettings = () => {
                 <button
                     onClick={() => setActiveSection('profiles')}
                     className={`flex-1 py-3 rounded-lg font-medium transition-all ${activeSection === 'profiles'
-                            ? 'bg-cyan-600 text-white'
-                            : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                        ? 'bg-cyan-600 text-white'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800'
                         }`}
                 >
                     <User className="w-4 h-4 inline mr-2" />
@@ -82,8 +83,8 @@ export const FakeCallSettings = () => {
                 <button
                     onClick={() => setActiveSection('scheduled')}
                     className={`flex-1 py-3 rounded-lg font-medium transition-all ${activeSection === 'scheduled'
-                            ? 'bg-cyan-600 text-white'
-                            : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                        ? 'bg-cyan-600 text-white'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800'
                         }`}
                 >
                     <Calendar className="w-4 h-4 inline mr-2" />
@@ -92,8 +93,8 @@ export const FakeCallSettings = () => {
                 <button
                     onClick={() => setActiveSection('triggers')}
                     className={`flex-1 py-3 rounded-lg font-medium transition-all ${activeSection === 'triggers'
-                            ? 'bg-cyan-600 text-white'
-                            : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                        ? 'bg-cyan-600 text-white'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800'
                         }`}
                 >
                     <Bell className="w-4 h-4 inline mr-2" />

@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Mic, Phone, AlertTriangle, Sun, Activity, MapPin, Users, Bell, Settings, Home, Video, Package, MessageSquare, Clock, Volume2, FileAudio, CheckCircle, XCircle, TrendingUp, Navigation, Eye, Zap, Lock, Radio, Battery, Signal, User, Calendar, Plus, Edit, Trash2, ChevronDown } from 'lucide-react';
+import { Shield, Mic, Phone, AlertTriangle, Sun, Activity, MapPin, Users, Bell, Settings, Home, Video, Package, MessageSquare, Clock, Volume2, FileAudio, CheckCircle, XCircle, TrendingUp, Navigation, Eye, Zap, Lock, Radio, Battery, Signal, User, Calendar, Plus, Edit, Trash2, ChevronDown, Timer } from 'lucide-react';
 import callerProfileService from './services/callerProfileService';
 import gestureDetector from './services/gestureDetector';
 import emergencyService from './services/emergencyService';
 import scheduledCallService from './services/scheduledCallService';
+import tripTrackerService from './services/tripTrackerService';
 import { getDeviceStatus, formatCallDuration } from './utils/deviceStatus';
 import EnhancedFakeCall from './components/EnhancedFakeCall';
 import FakeCallSettings from './components/FakeCallSettings';
+import TripSetup from './components/TripSetup';
+import ActiveTripMonitor from './components/ActiveTripMonitor';
 
 const AuraApp = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [showEnhancedCall, setShowEnhancedCall] = useState(false);
   const [showFakeCallSettings, setShowFakeCallSettings] = useState(false);
   const [audioShieldActive, setAudioShieldActive] = useState(false);
+  const [showTripSetup, setShowTripSetup] = useState(false);
+  const [activeTrip, setActiveTrip] = useState(null);
   const [environmentalScanActive, setEnvironmentalScanActive] = useState(true);
   const [lightLevel, setLightLevel] = useState(85);
   const [soundLevel, setSoundLevel] = useState(42);
@@ -70,12 +75,29 @@ const AuraApp = () => {
     gestureDetector.onTrigger(handleGestureTrigger);
     scheduledCallService.onScheduledCall(handleScheduledCall);
 
+    // Restore active trip if exists
+    const activeTrip = tripTrackerService.getActiveTrip();
+    if (activeTrip) {
+      setActiveTrip(activeTrip);
+    }
+
     return () => {
       scheduledCallService.stop();
       gestureDetector.offTrigger(handleGestureTrigger);
       scheduledCallService.offScheduledCall(handleScheduledCall);
     };
   }, []);
+
+  const handleTripStarted = (trip) => {
+    setActiveTrip(trip);
+    setShowTripSetup(false);
+    setActiveTab('trip');
+  };
+
+  const handleTripEnded = (trip) => {
+    setActiveTrip(null);
+    setActiveTab('home');
+  };
 
   const HomePage = () => (
     <div className="space-y-6">
@@ -112,17 +134,6 @@ const AuraApp = () => {
       {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-4">
         <button
-          onClick={() => setActiveTab('audio')}
-          className="bg-gradient-to-br from-red-950/40 to-orange-950/40 border border-red-900/30 rounded-2xl p-6 text-left hover:from-red-950/60 hover:to-orange-950/60 hover:border-red-800/40 transition-all group"
-        >
-          <div className="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center mb-3 group-hover:bg-red-500/30 transition-all">
-            <Mic className="w-7 h-7 text-red-400" />
-          </div>
-          <h3 className="text-white font-semibold mb-1">Audio Shield</h3>
-          <p className="text-red-300/70 text-xs">Discreet recording</p>
-        </button>
-
-        <button
           onClick={() => setActiveTab('fake')}
           className="bg-gradient-to-br from-blue-950/40 to-indigo-950/40 border border-blue-900/30 rounded-2xl p-6 text-left hover:from-blue-950/60 hover:to-indigo-950/60 hover:border-blue-800/40 transition-all group"
         >
@@ -132,83 +143,106 @@ const AuraApp = () => {
           <h3 className="text-white font-semibold mb-1">Fake Call</h3>
           <p className="text-blue-300/70 text-xs">Quick escape</p>
         </button>
+
+        <button
+          onClick={() => setActiveTab('audio')}
+          className="bg-gradient-to-br from-red-950/40 to-orange-950/40 border border-red-900/30 rounded-2xl p-6 text-left hover:from-red-950/60 hover:to-orange-950/60 hover:border-red-800/40 transition-all group"
+        >
+          <div className="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center mb-3 group-hover:bg-red-500/30 transition-all">
+            <Mic className="w-7 h-7 text-red-400" />
+          </div>
+          <h3 className="text-white font-semibold mb-1">Audio Shield</h3>
+          <p className="text-red-300/70 text-xs">Discreet recording</p>
+        </button>
       </div>
 
-      {/* Environmental Scanner Preview */}
-      <div
-        onClick={() => setActiveTab('scanner')}
-        className="bg-gray-950/60 border border-gray-900/40 rounded-2xl p-5 cursor-pointer hover:bg-gray-900/70 hover:border-gray-800/50 transition-all"
-      >
+      {/* Trip Tracker Feature */}
+      <div className="bg-gradient-to-br from-purple-950/40 to-pink-950/40 border border-purple-900/30 rounded-2xl p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-white font-semibold flex items-center gap-2">
-            <Activity className="w-5 h-5 text-emerald-400" />
-            Environmental Scanner
-          </h3>
-          <span className={`text-xs px-3 py-1 rounded-full font-medium ${environmentalScanActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-gray-700/30 text-gray-400 border border-gray-700'}`}>
-            {environmentalScanActive ? 'Active' : 'Inactive'}
-          </span>
+          <div>
+            <h3 className="text-white font-semibold flex items-center gap-2 mb-1">
+              <Timer className="w-5 h-5 text-purple-400" />
+              Trip Tracker
+            </h3>
+            <p className="text-gray-400 text-sm">ETA-based guardian alerts</p>
+          </div>
+          {activeTrip ? (
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+              <span className="text-purple-400 text-xs font-semibold">Active</span>
+            </div>
+          ) : (
+            <span className="text-gray-500 text-xs">Inactive</span>
+          )}
         </div>
-        <div className="grid grid-cols-3 gap-3 text-xs">
-          <div className="flex items-center gap-2 text-gray-300 bg-black/50 rounded-lg p-2">
-            <Sun className="w-4 h-4 text-yellow-400" />
-            <span className="font-medium">{Math.round(lightLevel)}%</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-300 bg-black/50 rounded-lg p-2">
-            <Activity className="w-4 h-4 text-cyan-400" />
-            <span className="font-medium">{Math.round(soundLevel)}dB</span>
-          </div>
-          <div className="flex items-center gap-2 text-emerald-400 bg-black/50 rounded-lg p-2">
-            <MapPin className="w-4 h-4" />
-            <span className="font-medium">Tracked</span>
-          </div>
-        </div>
+        {activeTrip ? (
+          <button
+            onClick={() => setActiveTab('trip')}
+            className="w-full bg-purple-950/40 border border-purple-800/40 text-purple-400 py-3 rounded-xl font-semibold hover:bg-purple-950/60 transition-all"
+          >
+            View Active Trip
+          </button>
+        ) : (
+          <button
+            onClick={() => setShowTripSetup(true)}
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all"
+          >
+            Start Trip
+          </button>
+        )}
       </div>
     </div>
   );
 
   const AudioShieldPage = () => {
-    // Threat keywords for speech analysis
-    const threatKeywords = [
-      'kill', 'hurt', 'attack', 'angry', 'hate', 'destroy', 'bomb',
-      'weapon', 'shoot', 'stab', 'punch', 'fight', 'blood', 'death',
-      'murder', 'violent', 'threat', 'beat', 'brutality', 'rape',
-      'assault', 'abuse', 'harm', 'danger', 'kill you', 'hurt you',
-      'attack you', 'destroy you', 'hate you'
-    ];
+    // Recording history state
+    const [recordingHistory, setRecordingHistory] = useState([]);
+    const [showHistory, setShowHistory] = useState(false);
+    const [audioWaveform, setAudioWaveform] = useState([]);
 
-    // Mock speech-to-text function (simulates transcript generation)
-    const generateMockTranscript = (avgVolume) => {
-      const volumeThreshold = 0.05;
-      const isRaisedVoice = avgVolume > volumeThreshold;
 
-      // Randomly generate different transcript scenarios for demo
-      const transcripts = [
-        isRaisedVoice ? "You better watch out! I'm angry!" : "Hello, how are you today?",
-        isRaisedVoice ? "I'll destroy everything!" : "Yes, that sounds good to me.",
-        isRaisedVoice ? "Stop! Get away from me!" : "Let's talk about this calmly.",
-        isRaisedVoice ? "You hurt me again! I hate this!" : "I'm just checking in with you.",
-      ];
-
-      return transcripts[Math.floor(Math.random() * transcripts.length)];
-    };
-
-    // Detect threat keywords in transcript
-    const detectThreats = (transcript) => {
-      const lowerTranscript = transcript.toLowerCase();
-      const detectedThreats = threatKeywords.filter(keyword =>
-        lowerTranscript.includes(keyword)
-      );
-      return detectedThreats.length > 0;
-    };
 
     const startRecording = async () => {
       try {
         setAnalysisResult(null);
         setRecordingTime(0);
+        setAudioWaveform([]);
 
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Enhanced audio constraints for far-distance recording and voice detection
+        const audioConstraints = {
+          audio: {
+            echoCancellation: false,  // Disable to capture distant sounds
+            noiseSuppression: false,  // Disable to capture all audio including distant voices
+            autoGainControl: true,    // Enable to boost distant/quiet sounds
+            sampleRate: 48000,        // Higher sample rate for better quality
+            channelCount: 2,          // Stereo for better spatial audio
+            latency: 0,               // Low latency for real-time processing
+            volume: 1.0               // Maximum volume to capture far sounds
+          }
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
         const recorder = new MediaRecorder(stream);
         const chunks = [];
+
+        // Create audio context for real-time waveform
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioContext.createAnalyser();
+        const source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyser);
+        analyser.fftSize = 256;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        // Update waveform data
+        const updateWaveform = () => {
+          if (audioShieldActive) {
+            analyser.getByteTimeDomainData(dataArray);
+            setAudioWaveform([...dataArray].slice(0, 50)); // Take first 50 samples
+            requestAnimationFrame(updateWaveform);
+          }
+        };
+        updateWaveform();
 
         recorder.ondataavailable = (e) => {
           chunks.push(e.data);
@@ -255,7 +289,7 @@ const AuraApp = () => {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
-        // Sound analysis: compute average volume
+        // Calculate volume from audio
         const channelData = audioBuffer.getChannelData(0);
         let sum = 0;
         for (let i = 0; i < channelData.length; i++) {
@@ -263,43 +297,26 @@ const AuraApp = () => {
         }
         const avgVolume = sum / channelData.length;
 
-        // Sound check: determine if raised voice
+        // Threat detection based on volume threshold
         const volumeThreshold = 0.05;
-        const hasRaisedVoice = avgVolume > volumeThreshold;
-
-        // Speech check: generate mock transcript and scan for threat keywords
-        const generatedTranscript = generateMockTranscript(avgVolume);
-        const hasThreateningWords = detectThreats(generatedTranscript);
-
-        // Determine transcript label based on analysis
-        let transcriptLabel = "Normal speech";
-        if (hasRaisedVoice && hasThreateningWords) {
-          transcriptLabel = "Raised voice + threatening words";
-        } else if (hasRaisedVoice) {
-          transcriptLabel = "Raised voice";
-        } else if (hasThreateningWords) {
-          transcriptLabel = "Threatening words";
-        }
-
-        // Final threat determination: aggression if either raised voice OR threatening words
-        const isThreat = hasRaisedVoice || hasThreateningWords;
-        const confidence = parseFloat((0.70 + Math.random() * 0.25).toFixed(2));
-
-        const threatLabel = isThreat
-          ? "Aggression Detected"
-          : "No Threat";
-
-        setAnalysisResult({
+        const isThreat = avgVolume > volumeThreshold;
+        
+        // Mock confidence (70-95%)
+        const confidence = 0.70 + Math.random() * 0.25;
+        
+        const result = {
           threat: isThreat,
-          label: threatLabel,
-          confidence: confidence,
-          transcript: transcriptLabel,
+          label: isThreat ? 'Aggression Detected' : 'No Threat',
+          confidence: parseFloat(confidence.toFixed(2)),
+          transcript: isThreat ? 'Raised voice patterns detected' : 'Normal speech',
           volume: avgVolume.toFixed(4),
-          detectedTranscript: generatedTranscript,
-          hasRaisedVoice: hasRaisedVoice,
-          hasThreateningWords: hasThreateningWords
-        });
+          timestamp: new Date().toISOString(),
+          duration: 5.0
+        };
 
+        setAnalysisResult(result);
+        setRecordingHistory(prev => [result, ...prev].slice(0, 10));
+        
         audioContext.close();
       } catch (error) {
         console.error('Error analyzing audio:', error);
@@ -342,6 +359,18 @@ const AuraApp = () => {
                 <div className="text-4xl font-bold text-red-400">{formatTime(recordingTime)}</div>
               </div>
               <div className="text-sm text-red-300 mb-3">Recording in progress...</div>
+              
+              {/* Real-time waveform visualization */}
+              <div className="flex items-center justify-center gap-1 h-16 mb-3">
+                {audioWaveform.map((value, index) => (
+                  <div
+                    key={index}
+                    className="w-1 bg-gradient-to-t from-red-600 to-red-400 rounded-full transition-all"
+                    style={{ height: `${(value / 255) * 100}%`, minHeight: '4px' }}
+                  />
+                ))}
+              </div>
+              
               <div className="flex items-center justify-center gap-2 bg-black/40 px-4 py-2 rounded-full border border-red-800/40">
                 <Radio className="w-4 h-4 text-red-400 animate-pulse" />
                 <span className="text-xs text-red-300">Analyzing audio patterns</span>
@@ -360,75 +389,61 @@ const AuraApp = () => {
         {/* Analysis Results */}
         {analysisResult && (
           <div className="fade-in-result animate-fade-in">
-            <div className={`bg-gradient-to-br rounded-2xl p-6 border ${analysisResult.threat
-              ? 'from-red-950/60 to-orange-950/60 border-red-800/40'
-              : 'from-emerald-950/60 to-teal-950/60 border-emerald-800/40'
+              <div className={`bg-gradient-to-br rounded-2xl p-6 border ${
+                analysisResult.threat 
+                  ? 'from-red-950/70 to-orange-950/70 border-red-700/50' 
+                  : 'from-emerald-950/60 to-teal-950/60 border-emerald-800/40'
               }`}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-white font-bold text-xl">Analysis Results</h3>
-                <div className={`px-4 py-2 rounded-full font-semibold text-sm ${analysisResult.threat
-                  ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                  : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                  }`}>
+                <div className={`px-4 py-2 rounded-full font-semibold text-sm flex items-center gap-2 ${
+                  analysisResult.threat 
+                    ? 'bg-red-500/30 text-red-200 border-2 border-red-400' 
+                    : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                }`}>
+                  {analysisResult.threat && <AlertTriangle className="w-4 h-4 animate-pulse" />}
                   {analysisResult.label}
                 </div>
-              </div>
-
-              <div className="space-y-4">
+              </div>              <div className="space-y-4">
+                {/* Confidence Level */}
                 <div className="bg-black/60 rounded-xl p-4 border border-white/5">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-400 text-sm">Confidence Level</span>
+                      <span className="text-gray-400 text-sm">Confidence</span>
                     </div>
                     <span className="text-white font-bold text-lg">{(analysisResult.confidence * 100).toFixed(0)}%</span>
                   </div>
                   <div className="w-full bg-gray-900 rounded-full h-2">
                     <div
-                      className={`h-2 rounded-full transition-all duration-500 ${analysisResult.threat
-                        ? 'bg-gradient-to-r from-red-500 to-orange-500'
-                        : 'bg-gradient-to-r from-emerald-500 to-teal-500'
-                        }`}
+                      className={`h-2 rounded-full transition-all duration-500 ${
+                        analysisResult.threat
+                          ? 'bg-gradient-to-r from-red-500 to-orange-500'
+                          : 'bg-gradient-to-r from-emerald-500 to-teal-500'
+                      }`}
                       style={{ width: `${analysisResult.confidence * 100}%` }}
                     ></div>
                   </div>
                 </div>
 
+                {/* Mock Transcript */}
                 <div className="bg-black/60 rounded-xl p-4 border border-white/5">
                   <div className="flex items-center gap-2 text-gray-400 text-sm mb-3">
                     <FileAudio className="w-4 h-4" />
-                    <span>Threat Analysis Summary</span>
+                    <span>Analysis</span>
                   </div>
-                  <div className={`font-medium text-sm mb-3 px-3 py-2 rounded-lg ${analysisResult.threat ? 'bg-red-900/30 text-red-300' : 'bg-emerald-900/30 text-emerald-300'
-                    }`}>
-                    "{analysisResult.transcript}"
-                  </div>
-
-                  {/* Detection indicators */}
-                  <div className="space-y-2 text-xs">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${analysisResult.hasRaisedVoice ? 'bg-red-400' : 'bg-gray-600'}`}></div>
-                      <span className="text-gray-400">Sound Check: <span className={analysisResult.hasRaisedVoice ? 'text-red-300 font-semibold' : 'text-emerald-300'}>{analysisResult.hasRaisedVoice ? 'Raised voice detected' : 'Normal voice level'}</span></span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${analysisResult.hasThreateningWords ? 'bg-red-400' : 'bg-gray-600'}`}></div>
-                      <span className="text-gray-400">Speech Check: <span className={analysisResult.hasThreateningWords ? 'text-red-300 font-semibold' : 'text-emerald-300'}>{analysisResult.hasThreateningWords ? 'Threat keywords detected' : 'No threat keywords'}</span></span>
-                    </div>
+                  <div className={`font-medium text-sm px-3 py-2 rounded-lg ${
+                    analysisResult.threat 
+                      ? 'bg-red-900/40 text-red-200 border border-red-700' 
+                      : 'bg-emerald-900/30 text-emerald-300'
+                  }`}>
+                    {analysisResult.transcript}
                   </div>
                 </div>
 
+                {/* Audio Metrics */}
                 <div className="bg-black/60 rounded-xl p-4 border border-white/5">
-                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-2">
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Detected Transcript</span>
-                  </div>
-                  <div className="text-sm italic text-gray-300 bg-black/40 p-2 rounded border border-gray-700">
-                    "{analysisResult.detectedTranscript}"
-                  </div>
-                </div>
-
-                <div className="bg-black/60 rounded-xl p-4 border border-white/5">
-                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-2">
+                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-3">
                     <Activity className="w-4 h-4" />
                     <span>Audio Metrics</span>
                   </div>
@@ -440,7 +455,7 @@ const AuraApp = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Volume2 className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-500">Volume:</span>
+                      <span className="text-gray-500">Avg Volume:</span>
                       <span className="text-white ml-auto font-medium">{analysisResult.volume}</span>
                     </div>
                   </div>
@@ -475,6 +490,68 @@ const AuraApp = () => {
             </div>
           </div>
         )}
+
+        {/* Recording History */}
+        {recordingHistory.length > 0 && (
+          <div className="bg-gray-950/70 border border-gray-900/40 rounded-2xl p-5">
+            <div 
+              className="flex items-center justify-between cursor-pointer mb-4"
+              onClick={() => setShowHistory(!showHistory)}
+            >
+              <div className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-cyan-400" />
+                <h3 className="text-white font-semibold text-lg">Recording History</h3>
+                <span className="text-xs text-gray-500">({recordingHistory.length})</span>
+              </div>
+              <div className={`transform transition-transform ${showHistory ? 'rotate-180' : ''}`}>
+                <ChevronDown className="w-5 h-5 text-gray-400" />
+              </div>
+            </div>
+            
+            {showHistory && (
+              <div className="space-y-3">
+                {recordingHistory.map((record, idx) => (
+                  <div key={idx} className="bg-black/40 rounded-lg p-4 border border-gray-800/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${
+                          record.threat ? 'bg-red-400' : 'bg-emerald-400'
+                        }`}></div>
+                        <span className="text-white text-sm font-medium">{record.label}</span>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {new Date(record.timestamp).toLocaleTimeString()}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-400">{record.transcript}</div>
+                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                      <span>Confidence: {(record.confidence * 100).toFixed(0)}%</span>
+                      <span>Volume: {record.volume}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Info Card */}
+        <div className="bg-cyan-950/20 border border-cyan-800/30 rounded-2xl p-5">
+          <div className="flex items-start gap-3">
+            <Shield className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="text-cyan-300 font-semibold mb-2 text-sm">How Audio Shield Works</h4>
+              <ul className="text-xs text-gray-400 space-y-1">
+                <li>• Records 5 seconds of audio discreetly</li>
+                <li>• Analyzes average volume level</li>
+                <li>• If volume exceeds threshold → "Aggression Detected"</li>
+                <li>• Otherwise → "No Threat"</li>
+                <li>• Provides mock confidence score (70-95%)</li>
+                <li>• All analysis done locally, no API calls</li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
       </div>
     );
@@ -1010,123 +1087,7 @@ const AuraApp = () => {
     );
   };
 
-  const ScannerPage = () => (
-    <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Environmental Scanner</h1>
-        <p className="text-gray-400 text-sm">Continuous situational awareness</p>
-      </div>
 
-      {/* Scanner Toggle */}
-      <div className="bg-gray-950/70 border border-gray-900/40 rounded-2xl p-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Eye className="w-5 h-5 text-emerald-400" />
-              <h3 className="text-white font-semibold">Scanner Status</h3>
-            </div>
-            <p className="text-gray-400 text-sm">Monitors environment passively</p>
-          </div>
-          <button
-            onClick={() => setEnvironmentalScanActive(!environmentalScanActive)}
-            className={`w-16 h-9 rounded-full transition-all relative ${environmentalScanActive ? 'bg-emerald-500 shadow-lg shadow-emerald-500/40' : 'bg-gray-700'
-              }`}
-          >
-            <div className={`w-7 h-7 bg-white rounded-full transition-transform absolute top-1 ${environmentalScanActive ? 'translate-x-8' : 'translate-x-1'
-              }`}></div>
-          </button>
-        </div>
-      </div>
-
-      {/* Sensor Readings */}
-      <div className="space-y-4">
-        <div className="bg-gray-950/70 border border-gray-900/40 rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${lightLevel < 40 ? 'bg-amber-500/20' : 'bg-gray-700/50'
-                }`}>
-                <Sun className={`w-6 h-6 ${lightLevel < 40 ? 'text-amber-400' : 'text-gray-400'}`} />
-              </div>
-              <span className="text-white font-semibold text-lg">Light Level</span>
-            </div>
-            <span className="text-3xl font-bold text-white">{Math.round(lightLevel)}%</span>
-          </div>
-          <div className="w-full bg-gray-800 rounded-full h-3">
-            <div
-              className={`h-3 rounded-full transition-all shadow-lg ${lightLevel < 40 ? 'bg-gradient-to-r from-amber-500 to-yellow-500 shadow-amber-500/50' : 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-emerald-500/50'
-                }`}
-              style={{ width: `${lightLevel}%` }}
-            ></div>
-          </div>
-          {lightLevel < 40 && (
-            <div className="mt-4 flex items-center gap-2 text-amber-400 text-sm bg-amber-950/40 px-3 py-2 rounded-lg border border-amber-800/40">
-              <AlertTriangle className="w-4 h-4" />
-              <span>Low light zone detected</span>
-            </div>
-          )}
-        </div>
-
-        <div className="bg-gray-950/70 border border-gray-900/40 rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${soundLevel > 70 ? 'bg-red-500/20' : 'bg-gray-700/50'
-                }`}>
-                <Activity className={`w-6 h-6 ${soundLevel > 70 ? 'text-red-400' : 'text-gray-400'}`} />
-              </div>
-              <span className="text-white font-semibold text-lg">Sound Level</span>
-            </div>
-            <span className="text-3xl font-bold text-white">{Math.round(soundLevel)}dB</span>
-          </div>
-          <div className="w-full bg-gray-800 rounded-full h-3">
-            <div
-              className={`h-3 rounded-full transition-all shadow-lg ${soundLevel > 70 ? 'bg-gradient-to-r from-red-500 to-orange-500 shadow-red-500/50' : 'bg-gradient-to-r from-cyan-500 to-blue-500 shadow-cyan-500/50'
-                }`}
-              style={{ width: `${Math.min(100, soundLevel)}%` }}
-            ></div>
-          </div>
-          {soundLevel > 70 && (
-            <div className="mt-4 flex items-center gap-2 text-red-400 text-sm bg-red-950/40 px-3 py-2 rounded-lg border border-red-800/40">
-              <AlertTriangle className="w-4 h-4" />
-              <span>Elevated noise detected</span>
-            </div>
-          )}
-        </div>
-
-        <div className="bg-gray-950/70 border border-gray-900/40 rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                <Navigation className="w-6 h-6 text-emerald-400" />
-              </div>
-              <div>
-                <div className="text-white font-semibold text-lg">Motion Tracking</div>
-                <div className="text-gray-400 text-sm">Detects tailgating behavior</div>
-              </div>
-            </div>
-            <div className={`w-4 h-4 rounded-full shadow-lg ${motionAlert ? 'bg-red-500 animate-pulse shadow-red-500/50' : 'bg-emerald-500 shadow-emerald-500/50'}`}></div>
-          </div>
-        </div>
-      </div>
-
-      {/* Alert History */}
-      <div className="bg-gray-950/70 border border-gray-900/40 rounded-2xl p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Zap className="w-5 h-5 text-amber-400" />
-          <h3 className="text-white font-semibold text-lg">Recent Alerts</h3>
-        </div>
-        <div className="space-y-3 text-sm">
-          <div className="flex items-center gap-3 bg-black/30 p-3 rounded-lg">
-            <div className="w-2 h-2 bg-amber-400 rounded-full flex-shrink-0"></div>
-            <span className="text-gray-300">Low light warning - 5 mins ago</span>
-          </div>
-          <div className="flex items-center gap-3 bg-black/30 p-3 rounded-lg">
-            <div className="w-2 h-2 bg-emerald-400 rounded-full flex-shrink-0"></div>
-            <span className="text-gray-300">Entered safe zone - 12 mins ago</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
@@ -1156,10 +1117,23 @@ const AuraApp = () => {
       <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
         {activeTab === 'home' && <HomePage />}
         {activeTab === 'audio' && <AudioShieldPage />}
+        {activeTab === 'trip' && activeTrip && <ActiveTripMonitor trip={activeTrip} onTripEnded={handleTripEnded} />}
+        {activeTab === 'trip' && !activeTrip && (
+          <div className="flex flex-col items-center justify-center h-[60vh]">
+            <Timer className="w-16 h-16 text-gray-600 mb-4" />
+            <h3 className="text-white text-xl font-semibold mb-2">No Active Trip</h3>
+            <p className="text-gray-400 text-center mb-6">Start a trip to enable ETA-based guardian monitoring</p>
+            <button
+              onClick={() => setShowTripSetup(true)}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all"
+            >
+              Start Trip
+            </button>
+          </div>
+        )}
         {activeTab === 'fake' && !showEnhancedCall && !showFakeCallSettings && <FakeEngagementPage />}
         {activeTab === 'fake' && showEnhancedCall && <EnhancedFakeCall onClose={() => setShowEnhancedCall(false)} />}
         {activeTab === 'fake' && showFakeCallSettings && <FakeCallSettings />}
-        {activeTab === 'scanner' && <ScannerPage />}
       </div>
 
       {/* Bottom Navigation */}
@@ -1183,6 +1157,17 @@ const AuraApp = () => {
               <span className="text-xs font-medium">Audio</span>
             </button>
             <button
+              onClick={() => activeTrip ? setActiveTab('trip') : setShowTripSetup(true)}
+              className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all relative ${activeTab === 'trip' ? 'text-cyan-400 bg-cyan-950/30' : 'text-gray-600 hover:text-gray-400'
+                }`}
+            >
+              {activeTrip && (
+                <div className="absolute top-1 right-3 w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+              )}
+              <Timer className="w-6 h-6" />
+              <span className="text-xs font-medium">Trip</span>
+            </button>
+            <button
               onClick={() => setActiveTab('fake')}
               className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${activeTab === 'fake' ? 'text-cyan-400 bg-cyan-950/30' : 'text-gray-600 hover:text-gray-400'
                 }`}
@@ -1190,17 +1175,21 @@ const AuraApp = () => {
               <Phone className="w-6 h-6" />
               <span className="text-xs font-medium">Fake Call</span>
             </button>
-            <button
-              onClick={() => setActiveTab('scanner')}
-              className={`flex flex-col items-center gap-1 py-2 rounded-xl transition-all ${activeTab === 'scanner' ? 'text-cyan-400 bg-cyan-950/30' : 'text-gray-600 hover:text-gray-400'
-                }`}
-            >
-              <Activity className="w-6 h-6" />
-              <span className="text-xs font-medium">Scanner</span>
-            </button>
           </div>
         </div>
       </div>
+
+      {/* Trip Setup Modal */}
+      {showTripSetup && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <TripSetup
+              onTripStarted={handleTripStarted}
+              onClose={() => setShowTripSetup(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
