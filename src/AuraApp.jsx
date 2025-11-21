@@ -52,24 +52,24 @@ const AuraApp = () => {
   useEffect(() => {
     // Start scheduled call service
     scheduledCallService.start();
-    
+
     // Handle gesture triggers
     const handleGestureTrigger = (type) => {
       console.log('Gesture triggered:', type);
       setShowEnhancedCall(true);
       setActiveTab('fake');
     };
-    
+
     // Handle scheduled call triggers
     const handleScheduledCall = (call) => {
       console.log('Scheduled call triggered:', call);
       setShowEnhancedCall(true);
       setActiveTab('fake');
     };
-    
+
     gestureDetector.onTrigger(handleGestureTrigger);
     scheduledCallService.onScheduledCall(handleScheduledCall);
-    
+
     return () => {
       scheduledCallService.stop();
       gestureDetector.offTrigger(handleGestureTrigger);
@@ -787,7 +787,7 @@ const AuraApp = () => {
             <h3 className="text-white font-semibold text-sm mb-1">Enhanced Call</h3>
             <p className="text-gray-400 text-xs">Realistic video calls with profiles</p>
           </button>
-          
+
           <button
             onClick={() => setShowFakeCallSettings(true)}
             className="bg-gradient-to-br from-cyan-950/60 to-blue-950/60 border border-cyan-800/40 hover:border-cyan-700/50 rounded-xl p-4 text-left transition-all group"
