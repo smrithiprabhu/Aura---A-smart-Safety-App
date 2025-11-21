@@ -45,29 +45,29 @@ class VoiceCallAudioService {
 
     for (let channel = 0; channel < 2; channel++) {
       const data = buffer.getChannelData(channel);
-      
+
       // Create layered ambient sound
       for (let i = 0; i < length; i++) {
         const time = i / sampleRate;
-        
+
         // Low frequency rumble (bus/train engine)
         const rumble = Math.sin(2 * Math.PI * 45 * time) * 0.15 +
-                       Math.sin(2 * Math.PI * 62 * time) * 0.12 +
-                       Math.sin(2 * Math.PI * 38 * time) * 0.10;
-        
+          Math.sin(2 * Math.PI * 62 * time) * 0.12 +
+          Math.sin(2 * Math.PI * 38 * time) * 0.10;
+
         // Mid frequency hum (vehicle vibration)
         const hum = Math.sin(2 * Math.PI * 120 * time) * 0.08 +
-                    Math.sin(2 * Math.PI * 180 * time) * 0.06;
-        
+          Math.sin(2 * Math.PI * 180 * time) * 0.06;
+
         // White noise (air conditioning, distant traffic)
         const whiteNoise = (Math.random() * 2 - 1) * 0.03;
-        
+
         // Pink noise for more natural sound
         const pinkNoise = (Math.random() * 2 - 1) * 0.02 * (1 - time / duration);
-        
+
         // Combine all layers
         data[i] = (rumble + hum + whiteNoise + pinkNoise) * 0.08; // Very low volume
-        
+
         // Apply fade in/out for smooth looping
         if (i < sampleRate * 0.5) {
           data[i] *= i / (sampleRate * 0.5); // Fade in
@@ -92,15 +92,15 @@ class VoiceCallAudioService {
         }
 
         this.utterance = new SpeechSynthesisUtterance(text);
-        
+
         // Configure for female voice with natural characteristics
         const voices = window.speechSynthesis.getVoices();
-        const femaleVoice = voices.find(voice => 
-          (voice.name.includes('Female') || 
-           voice.name.includes('Samantha') || 
-           voice.name.includes('Victoria') ||
-           voice.name.includes('Karen') ||
-           voice.name.includes('Moira')) &&
+        const femaleVoice = voices.find(voice =>
+          (voice.name.includes('Female') ||
+            voice.name.includes('Samantha') ||
+            voice.name.includes('Victoria') ||
+            voice.name.includes('Karen') ||
+            voice.name.includes('Moira')) &&
           voice.lang.startsWith('en')
         ) || voices.find(voice => voice.lang.startsWith('en'));
 
@@ -156,9 +156,9 @@ class VoiceCallAudioService {
   async playVoiceCall() {
     try {
       this.stop(); // Stop any existing playback
-      
+
       const ctx = this.initAudioContext();
-      
+
       // Resume context if suspended
       if (ctx.state === 'suspended') {
         await ctx.resume();
@@ -180,10 +180,10 @@ class VoiceCallAudioService {
       this.backgroundSource = ctx.createBufferSource();
       this.backgroundSource.buffer = ambientBuffer;
       this.backgroundSource.loop = true;
-      
+
       this.backgroundGainNode = ctx.createGain();
       this.backgroundGainNode.gain.setValueAtTime(0.12, ctx.currentTime); // Very subtle
-      
+
       this.backgroundSource.connect(this.backgroundGainNode);
       this.backgroundGainNode.connect(ctx.destination);
       this.backgroundSource.start(0);

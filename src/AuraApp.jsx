@@ -300,10 +300,10 @@ const AuraApp = () => {
         // Threat detection based on volume threshold
         const volumeThreshold = 0.05;
         const isThreat = avgVolume > volumeThreshold;
-        
+
         // Mock confidence (70-95%)
         const confidence = 0.70 + Math.random() * 0.25;
-        
+
         const result = {
           threat: isThreat,
           label: isThreat ? 'Aggression Detected' : 'No Threat',
@@ -316,7 +316,7 @@ const AuraApp = () => {
 
         setAnalysisResult(result);
         setRecordingHistory(prev => [result, ...prev].slice(0, 10));
-        
+
         audioContext.close();
       } catch (error) {
         console.error('Error analyzing audio:', error);
@@ -359,7 +359,7 @@ const AuraApp = () => {
                 <div className="text-4xl font-bold text-red-400">{formatTime(recordingTime)}</div>
               </div>
               <div className="text-sm text-red-300 mb-3">Recording in progress...</div>
-              
+
               {/* Real-time waveform visualization */}
               <div className="flex items-center justify-center gap-1 h-16 mb-3">
                 {audioWaveform.map((value, index) => (
@@ -370,7 +370,7 @@ const AuraApp = () => {
                   />
                 ))}
               </div>
-              
+
               <div className="flex items-center justify-center gap-2 bg-black/40 px-4 py-2 rounded-full border border-red-800/40">
                 <Radio className="w-4 h-4 text-red-400 animate-pulse" />
                 <span className="text-xs text-red-300">Analyzing audio patterns</span>
@@ -389,18 +389,16 @@ const AuraApp = () => {
         {/* Analysis Results */}
         {analysisResult && (
           <div className="fade-in-result animate-fade-in">
-              <div className={`bg-gradient-to-br rounded-2xl p-6 border ${
-                analysisResult.threat 
-                  ? 'from-red-950/70 to-orange-950/70 border-red-700/50' 
-                  : 'from-emerald-950/60 to-teal-950/60 border-emerald-800/40'
+            <div className={`bg-gradient-to-br rounded-2xl p-6 border ${analysisResult.threat
+                ? 'from-red-950/70 to-orange-950/70 border-red-700/50'
+                : 'from-emerald-950/60 to-teal-950/60 border-emerald-800/40'
               }`}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-white font-bold text-xl">Analysis Results</h3>
-                <div className={`px-4 py-2 rounded-full font-semibold text-sm flex items-center gap-2 ${
-                  analysisResult.threat 
-                    ? 'bg-red-500/30 text-red-200 border-2 border-red-400' 
+                <div className={`px-4 py-2 rounded-full font-semibold text-sm flex items-center gap-2 ${analysisResult.threat
+                    ? 'bg-red-500/30 text-red-200 border-2 border-red-400'
                     : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                }`}>
+                  }`}>
                   {analysisResult.threat && <AlertTriangle className="w-4 h-4 animate-pulse" />}
                   {analysisResult.label}
                 </div>
@@ -416,11 +414,10 @@ const AuraApp = () => {
                   </div>
                   <div className="w-full bg-gray-900 rounded-full h-2">
                     <div
-                      className={`h-2 rounded-full transition-all duration-500 ${
-                        analysisResult.threat
+                      className={`h-2 rounded-full transition-all duration-500 ${analysisResult.threat
                           ? 'bg-gradient-to-r from-red-500 to-orange-500'
                           : 'bg-gradient-to-r from-emerald-500 to-teal-500'
-                      }`}
+                        }`}
                       style={{ width: `${analysisResult.confidence * 100}%` }}
                     ></div>
                   </div>
@@ -432,11 +429,10 @@ const AuraApp = () => {
                     <FileAudio className="w-4 h-4" />
                     <span>Analysis</span>
                   </div>
-                  <div className={`font-medium text-sm px-3 py-2 rounded-lg ${
-                    analysisResult.threat 
-                      ? 'bg-red-900/40 text-red-200 border border-red-700' 
+                  <div className={`font-medium text-sm px-3 py-2 rounded-lg ${analysisResult.threat
+                      ? 'bg-red-900/40 text-red-200 border border-red-700'
                       : 'bg-emerald-900/30 text-emerald-300'
-                  }`}>
+                    }`}>
                     {analysisResult.transcript}
                   </div>
                 </div>
@@ -494,7 +490,7 @@ const AuraApp = () => {
         {/* Recording History */}
         {recordingHistory.length > 0 && (
           <div className="bg-gray-950/70 border border-gray-900/40 rounded-2xl p-5">
-            <div 
+            <div
               className="flex items-center justify-between cursor-pointer mb-4"
               onClick={() => setShowHistory(!showHistory)}
             >
@@ -507,16 +503,15 @@ const AuraApp = () => {
                 <ChevronDown className="w-5 h-5 text-gray-400" />
               </div>
             </div>
-            
+
             {showHistory && (
               <div className="space-y-3">
                 {recordingHistory.map((record, idx) => (
                   <div key={idx} className="bg-black/40 rounded-lg p-4 border border-gray-800/30">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${
-                          record.threat ? 'bg-red-400' : 'bg-emerald-400'
-                        }`}></div>
+                        <div className={`w-2 h-2 rounded-full ${record.threat ? 'bg-red-400' : 'bg-emerald-400'
+                          }`}></div>
                         <span className="text-white text-sm font-medium">{record.label}</span>
                       </div>
                       <span className="text-xs text-gray-500">

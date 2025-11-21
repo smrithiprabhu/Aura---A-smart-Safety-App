@@ -60,18 +60,16 @@ const ActiveJourneyMonitor = ({ journey, onCancel }) => {
   return (
     <div className="space-y-4">
       {/* Status Header */}
-      <div className={`bg-gradient-to-br rounded-2xl p-6 border-2 ${
-        deviationStatus?.isDeviated
+      <div className={`bg-gradient-to-br rounded-2xl p-6 border-2 ${deviationStatus?.isDeviated
           ? 'from-amber-950/80 to-orange-950/80 border-amber-700/60 shadow-2xl shadow-amber-500/20'
           : 'from-emerald-950/80 to-teal-950/80 border-emerald-700/60 shadow-2xl shadow-emerald-500/20'
-      }`}>
+        }`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
-              deviationStatus?.isDeviated
+            <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${deviationStatus?.isDeviated
                 ? 'bg-amber-500/20 border border-amber-500/40'
                 : 'bg-emerald-500/20 border border-emerald-500/40'
-            }`}>
+              }`}>
               {deviationStatus?.isDeviated ? (
                 <AlertTriangle className="w-8 h-8 text-amber-400 animate-pulse" />
               ) : (
@@ -80,9 +78,8 @@ const ActiveJourneyMonitor = ({ journey, onCancel }) => {
             </div>
             <div>
               <h3 className="text-white font-bold text-lg">Safe Corridor Active</h3>
-              <p className={`text-sm ${
-                deviationStatus?.isDeviated ? 'text-amber-300' : 'text-emerald-300'
-              }`}>
+              <p className={`text-sm ${deviationStatus?.isDeviated ? 'text-amber-300' : 'text-emerald-300'
+                }`}>
                 {deviationStatus?.isDeviated ? '⚠️ Route Deviation Detected' : '✓ On planned route'}
               </p>
             </div>

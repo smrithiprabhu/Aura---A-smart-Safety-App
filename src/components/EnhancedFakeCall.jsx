@@ -478,8 +478,8 @@ export const EnhancedFakeCall = ({ onClose }) => {
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div
                             className={`w-64 h-64 bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl flex items-center justify-center shadow-2xl transition-all duration-300 ${idleAnimation === 'breathing' ? 'animate-pulse scale-100' :
-                                    idleAnimation === 'blinking' ? 'opacity-95' :
-                                        idleAnimation === 'nodding' ? 'animate-bounce' : ''
+                                idleAnimation === 'blinking' ? 'opacity-95' :
+                                    idleAnimation === 'nodding' ? 'animate-bounce' : ''
                                 }`}
                         >
                             <span className="text-9xl">{activeProfile?.avatar || '👤'}</span>
