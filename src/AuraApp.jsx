@@ -288,8 +288,8 @@ const AuraApp = () => {
           <button
             onClick={handleRecordingToggle}
             className={`w-48 h-48 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl ${audioShieldActive
-                ? 'bg-gradient-to-br from-red-600 to-red-800 shadow-red-500/60 scale-105'
-                : 'bg-gradient-to-br from-gray-900 to-black hover:from-gray-800 hover:to-gray-900 border border-gray-800'
+              ? 'bg-gradient-to-br from-red-600 to-red-800 shadow-red-500/60 scale-105'
+              : 'bg-gradient-to-br from-gray-900 to-black hover:from-gray-800 hover:to-gray-900 border border-gray-800'
               }`}
           >
             <div className={`${audioShieldActive ? 'animate-pulse' : ''}`}>
@@ -323,14 +323,14 @@ const AuraApp = () => {
         {analysisResult && (
           <div className="fade-in-result animate-fade-in">
             <div className={`bg-gradient-to-br rounded-2xl p-6 border ${analysisResult.threat
-                ? 'from-red-950/60 to-orange-950/60 border-red-800/40'
-                : 'from-emerald-950/60 to-teal-950/60 border-emerald-800/40'
+              ? 'from-red-950/60 to-orange-950/60 border-red-800/40'
+              : 'from-emerald-950/60 to-teal-950/60 border-emerald-800/40'
               }`}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-white font-bold text-xl">Analysis Results</h3>
                 <div className={`px-4 py-2 rounded-full font-semibold text-sm ${analysisResult.threat
-                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                    : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                  ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                   }`}>
                   {analysisResult.label}
                 </div>
@@ -348,8 +348,8 @@ const AuraApp = () => {
                   <div className="w-full bg-gray-900 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all duration-500 ${analysisResult.threat
-                          ? 'bg-gradient-to-r from-red-500 to-orange-500'
-                          : 'bg-gradient-to-r from-emerald-500 to-teal-500'
+                        ? 'bg-gradient-to-r from-red-500 to-orange-500'
+                        : 'bg-gradient-to-r from-emerald-500 to-teal-500'
                         }`}
                       style={{ width: `${analysisResult.confidence * 100}%` }}
                     ></div>
@@ -514,7 +514,7 @@ const AuraApp = () => {
         const audioContext = audioContextRef.current;
 
         // Try to resume context (may require user gesture in some browsers)
-        audioContext.resume && audioContext.resume().catch(() => {});
+        audioContext.resume && audioContext.resume().catch(() => { });
 
         // Create gain node for volume control (MAXIMUM LOUDNESS)
         const gainNode = audioContext.createGain();
@@ -646,7 +646,7 @@ const AuraApp = () => {
     // Play ringtone when incoming call popup appears
     useEffect(() => {
       const showIncomingCall = selectedScenario && (selectedScenario === 'video' || selectedScenario === 'urgent') && !callAccepted;
-      
+
       if (showIncomingCall) {
         playRingtone();
         // Keep incoming call visible for 30 seconds (configurable)
@@ -720,7 +720,7 @@ const AuraApp = () => {
       return () => {
         try {
           stopRingtone();
-        } catch (e) {}
+        } catch (e) { }
         if (transcriptIntervalRef.current) {
           clearInterval(transcriptIntervalRef.current);
           transcriptIntervalRef.current = null;
