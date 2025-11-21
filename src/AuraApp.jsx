@@ -129,6 +129,40 @@ const AuraApp = () => {
   );
 
   const AudioShieldPage = () => {
+    // Threat keywords for speech analysis
+    const threatKeywords = [
+      'kill', 'hurt', 'attack', 'angry', 'hate', 'destroy', 'bomb',
+      'weapon', 'shoot', 'stab', 'punch', 'fight', 'blood', 'death',
+      'murder', 'violent', 'threat', 'beat', 'brutality', 'rape',
+      'assault', 'abuse', 'harm', 'danger', 'kill you', 'hurt you',
+      'attack you', 'destroy you', 'hate you'
+    ];
+
+    // Mock speech-to-text function (simulates transcript generation)
+    const generateMockTranscript = (avgVolume) => {
+      const volumeThreshold = 0.05;
+      const isRaisedVoice = avgVolume > volumeThreshold;
+      
+      // Randomly generate different transcript scenarios for demo
+      const transcripts = [
+        isRaisedVoice ? "You better watch out! I'm angry!" : "Hello, how are you today?",
+        isRaisedVoice ? "I'll destroy everything!" : "Yes, that sounds good to me.",
+        isRaisedVoice ? "Stop! Get away from me!" : "Let's talk about this calmly.",
+        isRaisedVoice ? "You hurt me again! I hate this!" : "I'm just checking in with you.",
+      ];
+      
+      return transcripts[Math.floor(Math.random() * transcripts.length)];
+    };
+
+    // Detect threat keywords in transcript
+    const detectThreats = (transcript) => {
+      const lowerTranscript = transcript.toLowerCase();
+      const detectedThreats = threatKeywords.filter(keyword => 
+        lowerTranscript.includes(keyword)
+      );
+      return detectedThreats.length > 0;
+    };
+
     const startRecording = async () => {
       try {
         setAnalysisResult(null);
@@ -183,6 +217,7 @@ const AuraApp = () => {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
         
+        // Sound analysis: compute average volume
         const channelData = audioBuffer.getChannelData(0);
         let sum = 0;
         for (let i = 0; i < channelData.length; i++) {
@@ -190,25 +225,41 @@ const AuraApp = () => {
         }
         const avgVolume = sum / channelData.length;
         
+        // Sound check: determine if raised voice
         const volumeThreshold = 0.05;
-        const isThreat = avgVolume > volumeThreshold;
+        const hasRaisedVoice = avgVolume > volumeThreshold;
         
-        const confidence = (0.70 + Math.random() * 0.25).toFixed(2);
+        // Speech check: generate mock transcript and scan for threat keywords
+        const generatedTranscript = generateMockTranscript(avgVolume);
+        const hasThreateningWords = detectThreats(generatedTranscript);
         
-        const transcript = isThreat 
-          ? "Raised voice patterns detected" 
-          : "Normal speech patterns";
+        // Determine transcript label based on analysis
+        let transcriptLabel = "Normal speech";
+        if (hasRaisedVoice && hasThreateningWords) {
+          transcriptLabel = "Raised voice + threatening words";
+        } else if (hasRaisedVoice) {
+          transcriptLabel = "Raised voice";
+        } else if (hasThreateningWords) {
+          transcriptLabel = "Threatening words";
+        }
+        
+        // Final threat determination: aggression if either raised voice OR threatening words
+        const isThreat = hasRaisedVoice || hasThreateningWords;
+        const confidence = parseFloat((0.70 + Math.random() * 0.25).toFixed(2));
         
         const threatLabel = isThreat 
           ? "Aggression Detected" 
-          : "No Threat Detected";
+          : "No Threat";
         
         setAnalysisResult({
           threat: isThreat,
           label: threatLabel,
           confidence: confidence,
-          transcript: transcript,
-          volume: avgVolume.toFixed(4)
+          transcript: transcriptLabel,
+          volume: avgVolume.toFixed(4),
+          detectedTranscript: generatedTranscript,
+          hasRaisedVoice: hasRaisedVoice,
+          hasThreateningWords: hasThreateningWords
         });
         
         audioContext.close();
@@ -271,7 +322,7 @@ const AuraApp = () => {
 
         {/* Analysis Results */}
         {analysisResult && (
-          <div className="fade-in-result">
+          <div className="fade-in-result animate-fade-in">
             <div className={`bg-gradient-to-br rounded-2xl p-6 border ${
               analysisResult.threat 
                 ? 'from-red-950/60 to-orange-950/60 border-red-800/40' 
@@ -310,14 +361,36 @@ const AuraApp = () => {
                 </div>
 
                 <div className="bg-black/60 rounded-xl p-4 border border-white/5">
-                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-2">
+                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-3">
                     <FileAudio className="w-4 h-4" />
-                    <span>Transcript Analysis</span>
+                    <span>Threat Analysis Summary</span>
                   </div>
-                  <div className={`font-medium ${
-                    analysisResult.threat ? 'text-red-300' : 'text-emerald-300'
+                  <div className={`font-medium text-sm mb-3 px-3 py-2 rounded-lg ${
+                    analysisResult.threat ? 'bg-red-900/30 text-red-300' : 'bg-emerald-900/30 text-emerald-300'
                   }`}>
                     "{analysisResult.transcript}"
+                  </div>
+                  
+                  {/* Detection indicators */}
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${analysisResult.hasRaisedVoice ? 'bg-red-400' : 'bg-gray-600'}`}></div>
+                      <span className="text-gray-400">Sound Check: <span className={analysisResult.hasRaisedVoice ? 'text-red-300 font-semibold' : 'text-emerald-300'}>{analysisResult.hasRaisedVoice ? 'Raised voice detected' : 'Normal voice level'}</span></span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${analysisResult.hasThreateningWords ? 'bg-red-400' : 'bg-gray-600'}`}></div>
+                      <span className="text-gray-400">Speech Check: <span className={analysisResult.hasThreateningWords ? 'text-red-300 font-semibold' : 'text-emerald-300'}>{analysisResult.hasThreateningWords ? 'Threat keywords detected' : 'No threat keywords'}</span></span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-black/60 rounded-xl p-4 border border-white/5">
+                  <div className="flex items-center gap-2 text-gray-400 text-sm mb-2">
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Detected Transcript</span>
+                  </div>
+                  <div className="text-sm italic text-gray-300 bg-black/40 p-2 rounded border border-gray-700">
+                    "{analysisResult.detectedTranscript}"
                   </div>
                 </div>
 
