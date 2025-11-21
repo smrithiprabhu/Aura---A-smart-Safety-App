@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Mic, Phone, AlertTriangle, Sun, Activity, MapPin, Users, Bell, Settings, Home, Video, Package, MessageSquare, Clock, Volume2, FileAudio, CheckCircle, XCircle, TrendingUp, Navigation, Eye, Zap, Lock, Radio } from 'lucide-react';
+import { Shield, Mic, Phone, AlertTriangle, Sun, Activity, MapPin, Users, Bell, Settings, Home, Video, Package, MessageSquare, Clock, Volume2, FileAudio, CheckCircle, XCircle, TrendingUp, Navigation, Eye, Zap, Lock, Radio, Battery, Signal, User, Calendar, Plus, Edit, Trash2, ChevronDown } from 'lucide-react';
+import callerProfileService from './services/callerProfileService';
+import gestureDetector from './services/gestureDetector';
+import emergencyService from './services/emergencyService';
+import scheduledCallService from './services/scheduledCallService';
+import { getDeviceStatus, formatCallDuration } from './utils/deviceStatus';
+import EnhancedFakeCall from './components/EnhancedFakeCall';
+import FakeCallSettings from './components/FakeCallSettings';
 
 const AuraApp = () => {
   const [activeTab, setActiveTab] = useState('home');
+  const [showEnhancedCall, setShowEnhancedCall] = useState(false);
+  const [showFakeCallSettings, setShowFakeCallSettings] = useState(false);
   const [audioShieldActive, setAudioShieldActive] = useState(false);
   const [environmentalScanActive, setEnvironmentalScanActive] = useState(true);
   const [lightLevel, setLightLevel] = useState(85);
@@ -38,6 +47,35 @@ const AuraApp = () => {
     }, 2000);
     return () => clearInterval(interval);
   }, [environmentalScanActive]);
+
+  // Initialize services on mount
+  useEffect(() => {
+    // Start scheduled call service
+    scheduledCallService.start();
+    
+    // Handle gesture triggers
+    const handleGestureTrigger = (type) => {
+      console.log('Gesture triggered:', type);
+      setShowEnhancedCall(true);
+      setActiveTab('fake');
+    };
+    
+    // Handle scheduled call triggers
+    const handleScheduledCall = (call) => {
+      console.log('Scheduled call triggered:', call);
+      setShowEnhancedCall(true);
+      setActiveTab('fake');
+    };
+    
+    gestureDetector.onTrigger(handleGestureTrigger);
+    scheduledCallService.onScheduledCall(handleScheduledCall);
+    
+    return () => {
+      scheduledCallService.stop();
+      gestureDetector.offTrigger(handleGestureTrigger);
+      scheduledCallService.offScheduledCall(handleScheduledCall);
+    };
+  }, []);
 
   const HomePage = () => (
     <div className="space-y-6">
@@ -739,6 +777,27 @@ const AuraApp = () => {
           <p className="text-gray-400 text-sm">Quick escape scenarios</p>
         </div>
 
+        {/* Enhanced Features Quick Access */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => setShowEnhancedCall(true)}
+            className="bg-gradient-to-br from-purple-950/60 to-pink-950/60 border border-purple-800/40 hover:border-purple-700/50 rounded-xl p-4 text-left transition-all group"
+          >
+            <Video className="w-6 h-6 text-purple-400 mb-2 group-hover:scale-110 transition-transform" />
+            <h3 className="text-white font-semibold text-sm mb-1">Enhanced Call</h3>
+            <p className="text-gray-400 text-xs">Realistic video calls with profiles</p>
+          </button>
+          
+          <button
+            onClick={() => setShowFakeCallSettings(true)}
+            className="bg-gradient-to-br from-cyan-950/60 to-blue-950/60 border border-cyan-800/40 hover:border-cyan-700/50 rounded-xl p-4 text-left transition-all group"
+          >
+            <Settings className="w-6 h-6 text-cyan-400 mb-2 group-hover:scale-110 transition-transform" />
+            <h3 className="text-white font-semibold text-sm mb-1">Settings</h3>
+            <p className="text-gray-400 text-xs">Manage profiles & schedules</p>
+          </button>
+        </div>
+
         <div className="bg-amber-950/40 border border-amber-800/40 rounded-2xl p-4 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-amber-200/90 leading-relaxed">
@@ -1097,7 +1156,9 @@ const AuraApp = () => {
       <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
         {activeTab === 'home' && <HomePage />}
         {activeTab === 'audio' && <AudioShieldPage />}
-        {activeTab === 'fake' && <FakeEngagementPage />}
+        {activeTab === 'fake' && !showEnhancedCall && !showFakeCallSettings && <FakeEngagementPage />}
+        {activeTab === 'fake' && showEnhancedCall && <EnhancedFakeCall onClose={() => setShowEnhancedCall(false)} />}
+        {activeTab === 'fake' && showFakeCallSettings && <FakeCallSettings />}
         {activeTab === 'scanner' && <ScannerPage />}
       </div>
 
