@@ -26,7 +26,7 @@ class TwilioService {
         const hasAccountSid = this.config.accountSid && !this.config.accountSid.includes('YOUR_');
         const hasAuthToken = this.config.authToken && !this.config.authToken.includes('YOUR_');
         const hasPhoneNumber = this.config.fromNumber && !this.config.fromNumber.includes('YOUR_');
-        
+
         return hasAccountSid && hasAuthToken && hasPhoneNumber;
     }
 
@@ -129,7 +129,7 @@ class TwilioService {
     validatePhoneNumber(phone) {
         // Remove all non-digit characters
         const cleaned = phone.replace(/\D/g, '');
-        
+
         // Check if it's a valid length (10-15 digits)
         if (cleaned.length < 10 || cleaned.length > 15) {
             return { valid: false, message: 'Phone number must be 10-15 digits' };
