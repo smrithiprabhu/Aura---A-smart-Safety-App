@@ -34,6 +34,12 @@ const AuraApp = () => {
   const handleLogin = (userData) => {
     setUser(userData);
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem('aura_user');
+    setUser(null);
+  };
+
   const [activeTrip, setActiveTrip] = useState(null);
   const [environmentalScanActive, setEnvironmentalScanActive] = useState(true);
   const [lightLevel, setLightLevel] = useState(85);
@@ -138,7 +144,7 @@ const AuraApp = () => {
             <span className="text-[10px] text-emerald-500 font-semibold">ACTIVE</span>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center gap-2 mb-1">
@@ -238,38 +244,38 @@ const AuraApp = () => {
     const THREAT_KEYWORDS = [
       // Emergency & Distress
       'help', 'help me', 'somebody help', 'need help', 'emergency', 'urgent', '911', 'sos',
-      
+
       // Danger & Threats
       'danger', 'dangerous', 'threat', 'threatening', 'scared', 'afraid', 'terrified', 'fear',
-      
+
       // Violence & Harm
       'hurt', 'hurting', 'pain', 'attack', 'attacking', 'hit', 'hitting', 'beat', 'beating',
       'kill', 'killing', 'murder', 'shoot', 'shooting', 'stab', 'stabbing', 'weapon', 'gun', 'knife',
-      
+
       // Physical Aggression
       'fight', 'fighting', 'violence', 'violent', 'assault', 'assaulting', 'abuse', 'abusing',
-      
+
       // Commands to Stop
       'stop', 'stop it', "don't", 'leave me alone', 'get away', 'go away', 'back off',
-      
+
       // Calls for Authority
       'police', 'cops', 'call police', 'call cops', 'ambulance', 'fire department',
-      
+
       // Fire & Disaster
       'fire', 'burning', 'smoke', 'explosion', 'bomb',
-      
+
       // Medical Emergency
       'bleeding', 'blood', 'injured', 'injury', 'hurt', 'sick', 'dying', 'collapse',
-      
+
       // Kidnapping & Entrapment
       'kidnap', 'kidnapping', 'trapped', 'locked', 'prisoner', 'hostage',
-      
+
       // Sexual Assault
       'rape', 'molest', 'assault', 'harass', 'harassment',
-      
+
       // Robbery & Theft
       'rob', 'robber', 'robbery', 'thief', 'steal', 'stealing', 'burglar', 'intruder',
-      
+
       // Negative Emotional States
       'save me', 'please', 'no', 'scream', 'screaming', 'cry', 'crying'
     ];
@@ -378,7 +384,7 @@ const AuraApp = () => {
                 interimTranscript += transcriptPiece;
               }
             }
-            
+
             // Check for threat keywords in real-time
             const allText = (transcript + interimTranscript).toLowerCase();
             THREAT_KEYWORDS.forEach(keyword => {
@@ -386,7 +392,7 @@ const AuraApp = () => {
                 foundKeywords.push(keyword);
               }
             });
-            
+
             setSpeechTranscript(transcript + interimTranscript);
             setDetectedKeywords([...foundKeywords]);
           };
@@ -403,7 +409,7 @@ const AuraApp = () => {
         const source = audioContext.createMediaStreamSource(stream);
         const analyser = audioContext.createAnalyser();
         const scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
-        
+
         analyser.fftSize = 2048; // Increased for better frequency resolution
         source.connect(analyser);
         source.connect(scriptProcessor);
@@ -415,22 +421,22 @@ const AuraApp = () => {
         let isFemaleVoice = false;
         let pitchDetections = [];
         let voiceFrameCount = 0;
-        
+
         // Autocorrelation-based pitch detection
         const detectPitch = (buffer) => {
           const SIZE = buffer.length;
           const sampleRate = audioContext.sampleRate;
-          
+
           // Calculate energy to detect voice activity
           let energy = 0;
           for (let i = 0; i < SIZE; i++) {
             energy += buffer[i] * buffer[i];
           }
           energy = Math.sqrt(energy / SIZE);
-          
+
           // Only analyze if there's significant voice activity (energy threshold)
           if (energy < 0.01) return null; // Too quiet, likely silence
-          
+
           // Autocorrelation method for pitch detection
           const autocorrelation = new Array(SIZE).fill(0);
           for (let lag = 0; lag < SIZE; lag++) {
@@ -438,51 +444,51 @@ const AuraApp = () => {
               autocorrelation[lag] += buffer[i] * buffer[i + lag];
             }
           }
-          
+
           // Find the first peak after the initial one
           let foundPeak = false;
           let peakIndex = -1;
           const minLag = Math.floor(sampleRate / 400); // Max 400 Hz
           const maxLag = Math.floor(sampleRate / 50);  // Min 50 Hz
-          
+
           for (let i = minLag; i < maxLag && i < autocorrelation.length; i++) {
-            if (autocorrelation[i] > autocorrelation[i - 1] && 
-                autocorrelation[i] > autocorrelation[i + 1]) {
+            if (autocorrelation[i] > autocorrelation[i - 1] &&
+              autocorrelation[i] > autocorrelation[i + 1]) {
               peakIndex = i;
               foundPeak = true;
               break;
             }
           }
-          
+
           if (!foundPeak || peakIndex === -1) return null;
-          
+
           // Calculate frequency from lag
           const frequency = sampleRate / peakIndex;
-          
+
           // Only return valid human voice frequencies (80-400 Hz)
           if (frequency >= 80 && frequency <= 400) {
             return frequency;
           }
-          
+
           return null;
         };
-        
+
         // Capture PCM samples and continuously detect pitch
         let isRecording = true;
         scriptProcessor.onaudioprocess = (event) => {
           if (isRecording) {
             const inputData = event.inputBuffer.getChannelData(0);
             samples.push(...inputData);
-            
+
             // Detect pitch from current audio buffer
             const detectedPitch = detectPitch(inputData);
-            
+
             if (detectedPitch) {
               voiceFrameCount++;
               pitchDetections.push(detectedPitch);
-              
+
               console.log(`🎤 Detected pitch: ${detectedPitch.toFixed(1)} Hz`);
-              
+
               // Classify as female or male based on pitch
               // Female: 165-255 Hz (extended range: 150-280 Hz)
               // Male: 85-155 Hz (extended range: 80-165 Hz)
@@ -491,19 +497,19 @@ const AuraApp = () => {
               } else if (detectedPitch >= 80 && detectedPitch <= 165) {
                 console.log('👨 Male voice detected');
               }
-              
+
               // After collecting enough samples, determine voice gender
               if (pitchDetections.length >= 15) {
                 // Calculate median pitch (more robust than average)
                 const sortedPitches = [...pitchDetections].sort((a, b) => a - b);
                 const medianPitch = sortedPitches[Math.floor(sortedPitches.length / 2)];
-                
+
                 // Count how many samples are in female range
                 const femaleCount = pitchDetections.filter(p => p >= 165 && p <= 280).length;
                 const maleCount = pitchDetections.filter(p => p >= 80 && p <= 165).length;
-                
+
                 console.log(`📊 Voice Analysis: Median=${medianPitch.toFixed(1)}Hz, Female=${femaleCount}, Male=${maleCount}`);
-                
+
                 // Use median pitch and majority voting
                 if (medianPitch >= 165 && femaleCount > maleCount) {
                   isFemaleVoice = true;
@@ -605,7 +611,7 @@ const AuraApp = () => {
 
         // 3. Combined threat logic
         let threat, threatMessage, confidence;
-        
+
         if (volumeThreat && keywordThreat) {
           // BOTH indicators present
           threat = 'Confirmed threat';
@@ -661,7 +667,7 @@ const AuraApp = () => {
           shouldSendAlert,
           willShowUI: shouldSendAlert
         });
-        
+
         if (shouldSendAlert) {
           console.log('📱 Triggering emergency SMS alerts...');
           await sendEmergencyAlert(result);
@@ -691,7 +697,7 @@ const AuraApp = () => {
         let locationText = 'Location unavailable';
         let latitude = null;
         let longitude = null;
-        
+
         if (navigator.geolocation) {
           try {
             const position = await new Promise((resolve, reject) => {
@@ -748,7 +754,7 @@ const AuraApp = () => {
           console.log(`📊 Total contacts: ${smsResult.results?.length || 0}`);
           console.log(`✅ Sent: ${smsResult.totalSent}`);
           console.log(`❌ Failed: ${smsResult.totalFailed}`);
-          
+
           if (smsResult.success && smsResult.totalSent > 0) {
             console.log(`✅ Successfully opened SMS app for ${smsResult.totalSent} contact(s)`);
             alert(`📱 SMS Alert!\n\nOpening messaging app for ${smsResult.totalSent} emergency contact(s).\n\nPlease send the pre-filled messages.`);
@@ -852,13 +858,13 @@ const AuraApp = () => {
                 {showScenarioInput ? 'Hide' : 'Show'}
               </button>
             </div>
-            
+
             {showScenarioInput && (
               <div className="space-y-3">
                 <p className="text-gray-400 text-xs mb-3">
                   Describe an audio scenario for AI analysis
                 </p>
-                
+
                 {/* Quick Scenario Buttons */}
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <button
@@ -928,21 +934,19 @@ const AuraApp = () => {
         {/* Analysis Results */}
         {analysisResult && (
           <div className="analysis-fade-in" style={{ animation: 'fadeIn 0.4s ease-in' }}>
-            <div className={`rounded-xl p-6 border ${
-                analysisResult.threat === 'Confirmed threat'
+            <div className={`rounded-xl p-6 border ${analysisResult.threat === 'Confirmed threat'
                 ? 'bg-red-900 border-red-700'
                 : analysisResult.threat === 'Potential threat'
-                ? 'bg-yellow-900 border-yellow-700'
-                : 'bg-green-900 border-green-700'
+                  ? 'bg-yellow-900 border-yellow-700'
+                  : 'bg-green-900 border-green-700'
               }`}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-white font-bold text-xl">Enhanced Threat Detection</h3>
-                <div className={`px-4 py-2 rounded-full font-semibold text-sm flex items-center gap-2 ${
-                    analysisResult.threat === 'Confirmed threat'
+                <div className={`px-4 py-2 rounded-full font-semibold text-sm flex items-center gap-2 ${analysisResult.threat === 'Confirmed threat'
                     ? 'bg-red-500/30 text-red-200 border-2 border-red-400'
                     : analysisResult.threat === 'Potential threat'
-                    ? 'bg-yellow-500/30 text-yellow-200 border-2 border-yellow-400'
-                    : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      ? 'bg-yellow-500/30 text-yellow-200 border-2 border-yellow-400'
+                      : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                   }`}>
                   {analysisResult.threat !== 'No threat' && <AlertTriangle className="w-4 h-4 animate-pulse" />}
                   {analysisResult.threatMessage || analysisResult.threat}
@@ -950,11 +954,10 @@ const AuraApp = () => {
               </div>              <div className="space-y-4">
                 {/* Female Voice Detection Indicator */}
                 {analysisResult.femaleVoice !== undefined && (
-                  <div className={`rounded-xl p-3 border ${
-                    analysisResult.femaleVoice 
-                      ? 'bg-purple-950/40 border-purple-800/40' 
+                  <div className={`rounded-xl p-3 border ${analysisResult.femaleVoice
+                      ? 'bg-purple-950/40 border-purple-800/40'
                       : 'bg-gray-950/40 border-gray-800/40'
-                  }`}>
+                    }`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <User className={`w-4 h-4 ${analysisResult.femaleVoice ? 'text-purple-400' : 'text-gray-500'}`} />
@@ -976,11 +979,10 @@ const AuraApp = () => {
 
                 {/* Threat Indicators */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className={`rounded-xl p-3 border ${
-                    analysisResult.volumeThreat 
-                      ? 'bg-yellow-950/40 border-yellow-800/40' 
+                  <div className={`rounded-xl p-3 border ${analysisResult.volumeThreat
+                      ? 'bg-yellow-950/40 border-yellow-800/40'
                       : 'bg-gray-950/40 border-gray-800/40'
-                  }`}>
+                    }`}>
                     <div className="flex items-center gap-2 mb-1">
                       <Volume2 className={`w-4 h-4 ${analysisResult.volumeThreat ? 'text-yellow-400' : 'text-gray-500'}`} />
                       <span className={`text-xs font-semibold ${analysisResult.volumeThreat ? 'text-yellow-300' : 'text-gray-500'}`}>
@@ -991,12 +993,11 @@ const AuraApp = () => {
                       {analysisResult.volumeThreat ? '⚠️ Elevated' : '✓ Normal'}
                     </div>
                   </div>
-                  
-                  <div className={`rounded-xl p-3 border ${
-                    analysisResult.keywordThreat 
-                      ? 'bg-red-950/40 border-red-800/40' 
+
+                  <div className={`rounded-xl p-3 border ${analysisResult.keywordThreat
+                      ? 'bg-red-950/40 border-red-800/40'
                       : 'bg-gray-950/40 border-gray-800/40'
-                  }`}>
+                    }`}>
                     <div className="flex items-center gap-2 mb-1">
                       <MessageSquare className={`w-4 h-4 ${analysisResult.keywordThreat ? 'text-red-400' : 'text-gray-500'}`} />
                       <span className={`text-xs font-semibold ${analysisResult.keywordThreat ? 'text-red-300' : 'text-gray-500'}`}>
@@ -1034,12 +1035,11 @@ const AuraApp = () => {
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
                     <div
-                      className={`h-2 rounded-full transition-all ${
-                          analysisResult.threat === 'Confirmed threat'
+                      className={`h-2 rounded-full transition-all ${analysisResult.threat === 'Confirmed threat'
                           ? 'bg-red-500'
                           : analysisResult.threat === 'Potential threat'
-                          ? 'bg-yellow-500'
-                          : 'bg-green-500'
+                            ? 'bg-yellow-500'
+                            : 'bg-green-500'
                         }`}
                       style={{ width: `${analysisResult.confidence * 100}%` }}
                     ></div>
@@ -1095,12 +1095,11 @@ const AuraApp = () => {
                     <FileAudio className="w-4 h-4" />
                     <span>Threat Assessment</span>
                   </div>
-                  <div className={`font-medium text-sm px-3 py-2 rounded-lg ${
-                      analysisResult.threat === 'Confirmed threat'
+                  <div className={`font-medium text-sm px-3 py-2 rounded-lg ${analysisResult.threat === 'Confirmed threat'
                       ? 'bg-red-900/40 text-red-200 border border-red-700'
                       : analysisResult.threat === 'Potential threat'
-                      ? 'bg-yellow-900/40 text-yellow-200 border border-yellow-700'
-                      : 'bg-emerald-900/30 text-emerald-300'
+                        ? 'bg-yellow-900/40 text-yellow-200 border border-yellow-700'
+                        : 'bg-emerald-900/30 text-emerald-300'
                     }`}>
                     {analysisResult.threatMessage || analysisResult.threat}
                   </div>
@@ -1141,7 +1140,7 @@ const AuraApp = () => {
                       </div>
                       <CheckCircle className="w-6 h-6 text-white" />
                     </div>
-                    
+
                     <div className="bg-red-700/60 rounded-lg p-4 space-y-3 text-sm border border-red-500">
                       <div className="font-semibold text-red-200 mb-2">Alert Contents:</div>
                       <div className="flex items-start gap-2 text-red-100">
@@ -1775,12 +1774,20 @@ const AuraApp = () => {
                 <p className="text-xs text-gray-500">Your Safety Shield</p>
               </div>
             </div>
-            <button 
-              onClick={() => setShowSettings(true)}
-              className="w-11 h-11 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-all border border-gray-800"
-            >
-              <Settings className="w-5 h-5 text-gray-400" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowSettings(true)}
+                className="w-11 h-11 bg-gray-900 rounded-xl flex items-center justify-center hover:bg-gray-800 transition-all border border-gray-800"
+              >
+                <Settings className="w-5 h-5 text-gray-400" />
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-4 h-11 bg-red-600 rounded-xl flex items-center justify-center hover:bg-red-700 transition-all border border-red-500 text-white text-sm font-medium"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </div>

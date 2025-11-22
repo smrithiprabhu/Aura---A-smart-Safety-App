@@ -284,8 +284,8 @@ const TripSetup = ({ onTripStarted }) => {
                                 key={guardian.id}
                                 onClick={() => setSelectedGuardian(guardian)}
                                 className={`w-full p-3 rounded-lg border transition-all ${selectedGuardian?.id === guardian.id
-                                        ? 'bg-purple-500/20 border-purple-500 text-white'
-                                        : 'bg-gray-900 border-gray-700 text-gray-300 hover:border-gray-600'
+                                    ? 'bg-purple-500/20 border-purple-500 text-white'
+                                    : 'bg-gray-900 border-gray-700 text-gray-300 hover:border-gray-600'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">

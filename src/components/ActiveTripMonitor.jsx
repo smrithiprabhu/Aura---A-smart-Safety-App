@@ -145,7 +145,7 @@ const ActiveTripMonitor = ({ trip, onTripEnded }) => {
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 text-center">
                         <div className="text-sm text-purple-100 mb-2">Time Remaining</div>
                         <div className={`text-5xl font-bold mb-2 ${isCritical ? 'text-red-400 animate-pulse' :
-                                isExpiringSoon ? 'text-yellow-400' : 'text-white'
+                            isExpiringSoon ? 'text-yellow-400' : 'text-white'
                             }`}>
                             {tripStatus.isExpired ? '00:00' : formatTime(tripStatus.remainingTime)}
                         </div>
@@ -164,7 +164,7 @@ const ActiveTripMonitor = ({ trip, onTripEnded }) => {
                         <div className="h-2 bg-white/20 rounded-full overflow-hidden">
                             <div
                                 className={`h-full transition-all duration-1000 ${tripStatus.isExpired ? 'bg-red-500' :
-                                        isExpiringSoon ? 'bg-yellow-500' : 'bg-green-500'
+                                    isExpiringSoon ? 'bg-yellow-500' : 'bg-green-500'
                                     }`}
                                 style={{ width: `${Math.min(100, tripStatus.progress)}%` }}
                             />
@@ -245,7 +245,7 @@ const ActiveTripMonitor = ({ trip, onTripEnded }) => {
                             <div className="p-3 bg-gray-900/50 rounded-lg">
                                 <div className="text-xs text-gray-400 mb-1">Status</div>
                                 <div className={`text-sm font-medium ${tripStatus.escalated ? 'text-red-400' :
-                                        tripStatus.isExpired ? 'text-yellow-400' : 'text-green-400'
+                                    tripStatus.isExpired ? 'text-yellow-400' : 'text-green-400'
                                     }`}>
                                     {tripStatus.escalated ? 'Emergency' :
                                         tripStatus.isExpired ? 'Expired' : 'Active'}
@@ -305,8 +305,8 @@ const ActiveTripMonitor = ({ trip, onTripEnded }) => {
                 <button
                     onClick={handleCancelTrip}
                     className={`w-full py-3 rounded-lg border transition-all flex items-center justify-center gap-2 ${confirmCancel
-                            ? 'bg-red-500 hover:bg-red-600 border-red-500 text-white'
-                            : 'bg-gray-800 hover:bg-gray-700 border-gray-700 text-gray-400'
+                        ? 'bg-red-500 hover:bg-red-600 border-red-500 text-white'
+                        : 'bg-gray-800 hover:bg-gray-700 border-gray-700 text-gray-400'
                         }`}
                 >
                     <X className="w-4 h-4" />

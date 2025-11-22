@@ -194,15 +194,15 @@ class EmergencyService {
                     // Create SMS link with proper formatting
                     const phoneNumber = contact.phone.replace(/\D/g, ''); // Remove non-digits
                     const messageBody = encodeURIComponent(alertData.message);
-                    
+
                     // Use SMS URI scheme (works on mobile and desktop)
                     // Format: sms:PHONE?body=MESSAGE
                     const smsLink = `sms:${phoneNumber}?body=${messageBody}`;
-                    
+
                     // Open SMS app with pre-filled message
                     console.log(`🔗 Opening SMS app for ${contact.name}...`);
                     window.open(smsLink, '_blank');
-                    
+
                     // Small delay between contacts to avoid blocking
                     await new Promise(resolve => setTimeout(resolve, 500));
 
