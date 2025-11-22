@@ -124,7 +124,7 @@ const ActiveTripMonitor = ({ trip, onTripEnded }) => {
             {/* Main Trip Card */}
             <div className="bg-gray-800/50 rounded-lg border border-gray-700 overflow-hidden">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
+                <div className="bg-blue-600 p-6">
                     <div className="flex items-start justify-between mb-4">
                         <div>
                             <h2 className="text-2xl font-bold text-white mb-1">Trip in Progress</h2>
@@ -177,7 +177,7 @@ const ActiveTripMonitor = ({ trip, onTripEnded }) => {
                     {!tripStatus.escalated && (
                         <button
                             onClick={handleSafeArrival}
-                            className="w-full py-5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold text-lg rounded-lg transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
+                            className="w-full py-5 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-lg transition-colors flex items-center justify-center gap-3"
                         >
                             <CheckCircle className="w-6 h-6" />
                             I Have Arrived Safely

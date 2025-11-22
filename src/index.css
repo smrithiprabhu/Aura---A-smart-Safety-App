@@ -38,6 +38,19 @@ body {
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .fade-in-result {
   animation: fadeInUp 0.5s ease-out;
+}
+
+.analysis-fade-in {
+  animation: fadeIn 0.4s ease-in;
 }
