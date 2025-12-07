@@ -80,12 +80,9 @@ src/
 │   ├── TripSetup.jsx              # Trip planning interface
 │   ├── ActiveTripMonitor.jsx      # Real-time trip tracking
 │   ├── EmergencyContactsSettings.jsx  # Contact management
-│   ├── OfflineIndicator.jsx       # Offline status display
 │   └── Login.jsx                  # Authentication
 ├── services/
 │   ├── callerProfileService.js    # Fake caller management
-│   ├── scheduledCallService.js    # Call scheduling logic
-│   ├── gestureDetector.js         # Shake & trigger detection
 │   ├── emergencyService.js        # Emergency alert system
 │   ├── tripTrackerService.js      # Trip monitoring
 │   ├── safeCorridorService.js     # Route deviation detection
